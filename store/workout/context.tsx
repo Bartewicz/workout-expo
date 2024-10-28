@@ -1,9 +1,10 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useMemo, useReducer } from "react";
 import type { ReactNode } from "react";
 import {
   useWorkoutState,
   WorkoutActions,
   workoutInitialState,
+  workoutReducer,
   WorkoutState,
 } from "./reducer";
 
@@ -28,4 +29,4 @@ export const WorkoutContextProvider = ({
   );
 };
 
-export const useWorkoutContext = useContext(WorkoutContext);
+export const useWorkoutContext = () => useContext(WorkoutContext);

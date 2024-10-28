@@ -14,6 +14,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         headerShown: false,
       }}
+      initialRouteName="(workout)/index"
     >
       <Tabs.Screen
         name="stats"
