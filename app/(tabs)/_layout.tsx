@@ -1,9 +1,9 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs } from "expo-router";
+import React from "react";
 
-import { TabBarIcon } from '@/components/navigation/TabBarIcon';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { TabBarIcon } from "@/components/navigation/TabBarIcon";
+import { Colors } from "@/constants/Colors";
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -11,24 +11,44 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         headerShown: false,
-      }}>
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name="stats"
         options={{
-          title: 'Home',
+          title: "Stats",
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+            <TabBarIcon
+              name={focused ? "stats-chart" : "stats-chart-outline"}
+              color={color}
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="(workout)/index"
         options={{
-          title: 'Explore',
+          title: "Workout",
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+            <TabBarIcon
+              name={focused ? "barbell-sharp" : "barbell-outline"}
+              color={color}
+              style={{ transform: "rotate(-45deg)" }}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="history"
+        options={{
+          title: "History",
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon
+              name={focused ? "calendar" : "calendar-outline"}
+              color={color}
+            />
           ),
         }}
       />
