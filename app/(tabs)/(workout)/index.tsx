@@ -338,7 +338,7 @@ export default function PlannerScreen() {
         </View>
       </View>
       <View style={{ alignItems: "center" }}>
-        <Link href="/(workout)/workout" disabled={disabled} asChild>
+        <Link href="/workout" disabled={disabled} asChild>
           <Pressable style={{ width: "50%" }}>
             <ThemedText
               type="defaultSemiBold"

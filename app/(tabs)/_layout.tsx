@@ -29,7 +29,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="(workout)/index"
+        name="(workout)"
         options={{
           title: "Workout",
           tabBarIcon: ({ color, focused }) => (
@@ -39,12 +39,6 @@ export default function TabLayout() {
               style={{ transform: "rotate(-45deg)" }}
             />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="(workout)/workout"
-        options={{
-          href: null,
         }}
       />
       <Tabs.Screen
