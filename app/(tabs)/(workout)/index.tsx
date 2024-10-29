@@ -1,5 +1,4 @@
 import {
-  Image,
   Pressable,
   StyleSheet,
   TextInput,
@@ -10,13 +9,15 @@ import {
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/view/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/view/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useWorkoutContext } from "@/store/workout/context";
+import { Link } from "expo-router";
 
-export default function WorkoutScreen() {
+export default function PlannerScreen() {
   const theme = useColorScheme() ?? "light";
-  const { actions } = useWorkoutContext();
+  const { actions, state } = useWorkoutContext();
+
+  const disabled = Object.entries(state).some(([_, value]) => !value);
 
   return (
     <ParallaxScrollView
@@ -28,18 +29,18 @@ export default function WorkoutScreen() {
         </View>
       }
     >
-      <ThemedView style={styles.stepContainer}>
+      <View style={styles.stepContainer}>
         <ThemedText type="subtitle" style={{ textAlign: "center" }}>
           1. Ćwiczenia na ilość powtórzeń:
         </ThemedText>
-        <ThemedView
+        <View
           style={{
             display: "flex",
             flexDirection: "row",
             justifyContent: "center",
           }}
         >
-          <ThemedView
+          <View
             style={{
               display: "flex",
               alignItems: "center",
@@ -65,8 +66,8 @@ export default function WorkoutScreen() {
                   : styles.numericInputBgDark,
               ]}
             />
-          </ThemedView>
-          <ThemedView
+          </View>
+          <View
             style={{
               display: "flex",
               alignItems: "center",
@@ -91,8 +92,8 @@ export default function WorkoutScreen() {
                   : styles.numericInputBgDark,
               ]}
             />
-          </ThemedView>
-          <ThemedView
+          </View>
+          <View
             style={{
               display: "flex",
               alignItems: "center",
@@ -117,21 +118,21 @@ export default function WorkoutScreen() {
                   : styles.numericInputBgDark,
               ]}
             />
-          </ThemedView>
-        </ThemedView>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
+          </View>
+        </View>
+      </View>
+      <View style={styles.stepContainer}>
         <ThemedText type="subtitle" style={{ textAlign: "center" }}>
           2. Ćwiczenia na czas:
         </ThemedText>
-        <ThemedView
+        <View
           style={{
             display: "flex",
             flexDirection: "row",
             justifyContent: "center",
           }}
         >
-          <ThemedView
+          <View
             style={{
               display: "flex",
               alignItems: "center",
@@ -156,8 +157,8 @@ export default function WorkoutScreen() {
                   : styles.numericInputBgDark,
               ]}
             />
-          </ThemedView>
-          <ThemedView
+          </View>
+          <View
             style={{
               display: "flex",
               alignItems: "center",
@@ -182,8 +183,8 @@ export default function WorkoutScreen() {
                   : styles.numericInputBgDark,
               ]}
             />
-          </ThemedView>
-          <ThemedView
+          </View>
+          <View
             style={{
               display: "flex",
               alignItems: "center",
@@ -228,21 +229,21 @@ export default function WorkoutScreen() {
                 sek.
               </ThemedText>
             </View>
-          </ThemedView>
-        </ThemedView>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
+          </View>
+        </View>
+      </View>
+      <View style={styles.stepContainer}>
         <ThemedText type="subtitle" style={{ textAlign: "center" }}>
           3. Wybierz czas przerw
         </ThemedText>
-        <ThemedView
+        <View
           style={{
             display: "flex",
             flexDirection: "row",
             justifyContent: "center",
           }}
         >
-          <ThemedView
+          <View
             style={{
               display: "flex",
               alignItems: "center",
@@ -287,8 +288,8 @@ export default function WorkoutScreen() {
                 sek.
               </ThemedText>
             </View>
-          </ThemedView>
-          <ThemedView
+          </View>
+          <View
             style={{
               display: "flex",
               alignItems: "center",
@@ -333,15 +334,26 @@ export default function WorkoutScreen() {
                 sek.
               </ThemedText>
             </View>
-          </ThemedView>
-        </ThemedView>
-      </ThemedView>
-      <View style={{ width: "50%", alignSelf: "center", height: 100 }}>
-        <Pressable style={{ width: "100%" }}>
-          <ThemedText type="defaultSemiBold" style={styles.forwardButton}>
-            DALEJ
-          </ThemedText>
-        </Pressable>
+          </View>
+        </View>
+      </View>
+      <View style={{ alignItems: "center" }}>
+        <Link href="/(workout)/workout" disabled={disabled} asChild>
+          <Pressable style={{ width: "50%" }}>
+            <ThemedText
+              type="defaultSemiBold"
+              style={[
+                styles.forwardButton,
+                disabled && {
+                  backgroundColor: Colors.dark.placeholder,
+                  color: Colors.dark.disabled,
+                },
+              ]}
+            >
+              DALEJ
+            </ThemedText>
+          </Pressable>
+        </Link>
       </View>
     </ParallaxScrollView>
   );
@@ -378,7 +390,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     color: Colors.dark.textInteractive,
     textAlign: "center",
-    paddingVertical: 10,
+    padding: 10,
     marginTop: 25,
   },
 });

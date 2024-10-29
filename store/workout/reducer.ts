@@ -23,25 +23,25 @@ export type WorkoutActions = Record<
 >;
 
 export type WorkoutState = {
-  repetitionExercisesCount: number;
-  repetitionExercisesSetsCount: number;
-  repetitionExercisesRepetitionsCount: number;
-  timedExercisesCount: number;
-  timedExercisesSetsCount: number;
-  timedExercisesDuration: Seconds;
-  setsBreakDuration: Seconds;
-  exercisesBreakDuration: Seconds;
+  repetitionExercisesCount: number | undefined;
+  repetitionExercisesSetsCount: number | undefined;
+  repetitionExercisesRepetitionsCount: number | undefined;
+  timedExercisesCount: number | undefined;
+  timedExercisesSetsCount: number | undefined;
+  timedExercisesDuration: Seconds | undefined;
+  setsBreakDuration: Seconds | undefined;
+  exercisesBreakDuration: Seconds | undefined;
 };
 
 export const workoutInitialState = {
-  repetitionExercisesCount: 1,
-  repetitionExercisesSetsCount: 1,
-  repetitionExercisesRepetitionsCount: 1,
-  timedExercisesCount: 1,
-  timedExercisesSetsCount: 1,
-  timedExercisesDuration: 30,
-  setsBreakDuration: 45,
-  exercisesBreakDuration: 90,
+  repetitionExercisesCount: undefined,
+  repetitionExercisesSetsCount: undefined,
+  repetitionExercisesRepetitionsCount: undefined,
+  timedExercisesCount: undefined,
+  timedExercisesSetsCount: undefined,
+  timedExercisesDuration: undefined,
+  setsBreakDuration: undefined,
+  exercisesBreakDuration: undefined,
 };
 
 export const workoutReducer: Reducer<WorkoutState, WorkoutAction> = (

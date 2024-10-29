@@ -42,6 +42,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="(workout)/workout"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="history"
         options={{
           title: "History",
