@@ -12,9 +12,11 @@ import ParallaxScrollView from "@/components/view/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/view/ThemedView";
 import { Colors } from "@/constants/Colors";
+import { useWorkoutContext } from "@/store/workout/context";
 
 export default function WorkoutScreen() {
   const theme = useColorScheme() ?? "light";
+  const { actions } = useWorkoutContext();
 
   return (
     <ParallaxScrollView
@@ -50,6 +52,7 @@ export default function WorkoutScreen() {
             <TextInput
               keyboardType="numeric"
               maxLength={2}
+              onChangeText={actions.setRepetitionExercisesCount}
               placeholder="1"
               placeholderTextColor={Colors.light.placeholder}
               selectionColor={
@@ -75,6 +78,7 @@ export default function WorkoutScreen() {
             <TextInput
               keyboardType="numeric"
               maxLength={2}
+              onChangeText={actions.setRepetitionExerciseSetsCount}
               placeholder="1"
               placeholderTextColor={Colors.light.placeholder}
               selectionColor={
@@ -100,6 +104,7 @@ export default function WorkoutScreen() {
             <TextInput
               keyboardType="numeric"
               maxLength={2}
+              onChangeText={actions.setRepetitionExerciseRepetitionsCount}
               placeholder="1"
               placeholderTextColor={Colors.light.placeholder}
               selectionColor={
@@ -131,13 +136,14 @@ export default function WorkoutScreen() {
               display: "flex",
               alignItems: "center",
               gap: 10,
-              width: "45%",
+              width: "30%",
             }}
           >
             <ThemedText type="defaultSemiBold">Ile ćwiczeń</ThemedText>
             <TextInput
               keyboardType="numeric"
               maxLength={2}
+              onChangeText={actions.setTimedExercisesCount}
               placeholder="10"
               placeholderTextColor={Colors.light.placeholder}
               selectionColor={
@@ -156,7 +162,33 @@ export default function WorkoutScreen() {
               display: "flex",
               alignItems: "center",
               gap: 10,
-              width: "45%",
+              width: "30%",
+            }}
+          >
+            <ThemedText type="defaultSemiBold">Ile serii</ThemedText>
+            <TextInput
+              keyboardType="numeric"
+              maxLength={2}
+              onChangeText={actions.setTimedExerciseSetsCount}
+              placeholder="1"
+              placeholderTextColor={Colors.light.placeholder}
+              selectionColor={
+                theme === "light" ? Colors.dark.tint : Colors.light.tint
+              }
+              style={[
+                styles.numericInput,
+                theme === "light"
+                  ? styles.numericInputBgLight
+                  : styles.numericInputBgDark,
+              ]}
+            />
+          </ThemedView>
+          <ThemedView
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              width: "30%",
             }}
           >
             <ThemedText type="defaultSemiBold">Czas trwania serii</ThemedText>
@@ -171,6 +203,7 @@ export default function WorkoutScreen() {
               <TextInput
                 keyboardType="numeric"
                 maxLength={3}
+                onChangeText={actions.setTimedExerciseDuration}
                 placeholder="45"
                 placeholderTextColor={Colors.light.placeholder}
                 selectionColor={
@@ -217,7 +250,7 @@ export default function WorkoutScreen() {
               width: "45%",
             }}
           >
-            <ThemedText type="defaultSemiBold">Między seriami:</ThemedText>
+            <ThemedText type="defaultSemiBold">Między ćwiczeniami:</ThemedText>
             <View
               style={{
                 display: "flex",
@@ -229,7 +262,8 @@ export default function WorkoutScreen() {
               <TextInput
                 keyboardType="numeric"
                 maxLength={2}
-                placeholder="45"
+                onChangeText={actions.setRestBetweenExercises}
+                placeholder="90"
                 placeholderTextColor={Colors.dark.placeholder}
                 selectionColor={
                   theme === "light" ? Colors.dark.tint : Colors.light.tint
@@ -262,7 +296,7 @@ export default function WorkoutScreen() {
               width: "45%",
             }}
           >
-            <ThemedText type="defaultSemiBold">Między ćwiczeniami:</ThemedText>
+            <ThemedText type="defaultSemiBold">Między seriami:</ThemedText>
             <View
               style={{
                 display: "flex",
@@ -274,7 +308,8 @@ export default function WorkoutScreen() {
               <TextInput
                 keyboardType="numeric"
                 maxLength={2}
-                placeholder="90"
+                onChangeText={actions.setRestBetweenSets}
+                placeholder="45"
                 placeholderTextColor={Colors.dark.placeholder}
                 selectionColor={
                   theme === "light" ? Colors.dark.tint : Colors.light.tint

@@ -1,10 +1,9 @@
-import { createContext, useContext, useMemo, useReducer } from "react";
+import { createContext, useContext } from "react";
 import type { ReactNode } from "react";
 import {
   useWorkoutState,
   WorkoutActions,
   workoutInitialState,
-  workoutReducer,
   WorkoutState,
 } from "./reducer";
 
@@ -14,7 +13,7 @@ type WorkoutContextProviderProps = {
 
 const WorkoutContext = createContext<{
   state: WorkoutState;
-  actions: Record<string, (value: number) => void>;
+  actions: WorkoutActions;
 }>({ state: workoutInitialState, actions: {} as WorkoutActions });
 
 export const WorkoutContextProvider = ({

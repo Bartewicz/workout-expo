@@ -17,7 +17,10 @@ type WorkoutAction = {
 };
 
 type WorkoutActionsKey = CamelCase<WorkoutAction["type"]>;
-export type WorkoutActions = Record<WorkoutActionsKey, (value: number) => void>;
+export type WorkoutActions = Record<
+  WorkoutActionsKey,
+  (textValue: string) => void
+>;
 
 export type WorkoutState = {
   repetitionExercisesCount: number;
@@ -72,28 +75,43 @@ export const useWorkoutState = () => {
 
   const actions: WorkoutActions = useMemo(
     () => ({
-      setRepetitionExercisesCount: (value: number) =>
-        dispatch({ type: "SET_REPETITION_EXERCISES_COUNT", payload: value }),
-      setRepetitionExerciseSetsCount: (value: number) =>
+      setRepetitionExercisesCount: (textValue: string) =>
+        dispatch({
+          type: "SET_REPETITION_EXERCISES_COUNT",
+          payload: Number(textValue),
+        }),
+      setRepetitionExerciseSetsCount: (textValue: string) =>
         dispatch({
           type: "SET_REPETITION_EXERCISE_SETS_COUNT",
-          payload: value,
+          payload: Number(textValue),
         }),
-      setRepetitionExerciseRepetitionsCount: (value: number) =>
+      setRepetitionExerciseRepetitionsCount: (textValue: string) =>
         dispatch({
           type: "SET_REPETITION_EXERCISE_REPETITIONS_COUNT",
-          payload: value,
+          payload: Number(textValue),
         }),
-      setTimedExercisesCount: (value: number) =>
-        dispatch({ type: "SET_TIMED_EXERCISES_COUNT", payload: value }),
-      setTimedExerciseSetsCount: (value: number) =>
-        dispatch({ type: "SET_TIMED_EXERCISE_SETS_COUNT", payload: value }),
-      setTimedExerciseDuration: (value: number) =>
-        dispatch({ type: "SET_TIMED_EXERCISE_DURATION", payload: value }),
-      setRestBetweenExercises: (value: number) =>
-        dispatch({ type: "SET_REST_BETWEEN_EXERCISES", payload: value }),
-      setRestBetweenSets: (value: number) =>
-        dispatch({ type: "SET_REST_BETWEEN_SETS", payload: value }),
+      setTimedExercisesCount: (textValue: string) =>
+        dispatch({
+          type: "SET_TIMED_EXERCISES_COUNT",
+          payload: Number(textValue),
+        }),
+      setTimedExerciseSetsCount: (textValue: string) =>
+        dispatch({
+          type: "SET_TIMED_EXERCISE_SETS_COUNT",
+          payload: Number(textValue),
+        }),
+      setTimedExerciseDuration: (textValue: string) =>
+        dispatch({
+          type: "SET_TIMED_EXERCISE_DURATION",
+          payload: Number(textValue),
+        }),
+      setRestBetweenExercises: (textValue: string) =>
+        dispatch({
+          type: "SET_REST_BETWEEN_EXERCISES",
+          payload: Number(textValue),
+        }),
+      setRestBetweenSets: (textValue: string) =>
+        dispatch({ type: "SET_REST_BETWEEN_SETS", payload: Number(textValue) }),
     }),
     [dispatch]
   );
