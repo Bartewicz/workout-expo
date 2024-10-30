@@ -11,8 +11,8 @@ type WorkoutAction = {
     | "SET_TIMED_EXERCISES_COUNT"
     | "SET_TIMED_EXERCISE_SETS_COUNT"
     | "SET_TIMED_EXERCISE_DURATION"
-    | "SET_REST_BETWEEN_EXERCISES"
-    | "SET_REST_BETWEEN_SETS";
+    | "SET_EXERCISES_BREAK_DURATION"
+    | "SET_SETS_BREAK_DURATION";
   payload: number;
 };
 
@@ -31,7 +31,7 @@ export type WorkoutState = {
   timedExercisesDuration: Seconds | undefined;
   setsBreakDuration: Seconds | undefined;
   exercisesBreakDuration: Seconds | undefined;
-};
+} & {};
 
 export const workoutInitialState = {
   repetitionExercisesCount: undefined,
@@ -61,10 +61,10 @@ export const workoutReducer: Reducer<WorkoutState, WorkoutAction> = (
       return { ...state, timedExercisesSetsCount: action.payload };
     case "SET_TIMED_EXERCISE_DURATION":
       return { ...state, timedExercisesDuration: action.payload };
-    case "SET_REST_BETWEEN_EXERCISES":
-      return { ...state, setsBreakDuration: action.payload };
-    case "SET_REST_BETWEEN_SETS":
+    case "SET_EXERCISES_BREAK_DURATION":
       return { ...state, exercisesBreakDuration: action.payload };
+    case "SET_SETS_BREAK_DURATION":
+      return { ...state, setsBreakDuration: action.payload };
     default:
       throw new Error("Unknown action");
   }
@@ -105,13 +105,16 @@ export const useWorkoutState = () => {
           type: "SET_TIMED_EXERCISE_DURATION",
           payload: Number(textValue),
         }),
-      setRestBetweenExercises: (textValue: string) =>
+      setExercisesBreakDuration: (textValue: string) =>
         dispatch({
-          type: "SET_REST_BETWEEN_EXERCISES",
+          type: "SET_EXERCISES_BREAK_DURATION",
           payload: Number(textValue),
         }),
-      setRestBetweenSets: (textValue: string) =>
-        dispatch({ type: "SET_REST_BETWEEN_SETS", payload: Number(textValue) }),
+      setSetsBreakDuration: (textValue: string) =>
+        dispatch({
+          type: "SET_SETS_BREAK_DURATION",
+          payload: Number(textValue),
+        }),
     }),
     [dispatch]
   );

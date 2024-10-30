@@ -11,13 +11,21 @@ import ParallaxScrollView from "@/components/view/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { useWorkoutContext } from "@/store/workout/context";
-import { Link } from "expo-router";
+import { useRouter } from "expo-router";
+import { useCallback } from "react";
 
 export default function PlannerScreen() {
   const theme = useColorScheme() ?? "light";
   const { actions, state } = useWorkoutContext();
+  const router = useRouter();
 
-  const disabled = Object.entries(state).some(([_, value]) => !value);
+  const disabled = Object.values(state).some((value) => !value);
+
+  const onPressProceed = useCallback(() => {
+    if (!disabled) {
+      router.push("/workout");
+    }
+  }, [disabled]);
 
   return (
     <ParallaxScrollView
@@ -263,7 +271,7 @@ export default function PlannerScreen() {
               <TextInput
                 keyboardType="numeric"
                 maxLength={2}
-                onChangeText={actions.setRestBetweenExercises}
+                onChangeText={actions.setExercisesBreakDuration}
                 placeholder="90"
                 placeholderTextColor={Colors.dark.placeholder}
                 selectionColor={
@@ -309,7 +317,7 @@ export default function PlannerScreen() {
               <TextInput
                 keyboardType="numeric"
                 maxLength={2}
-                onChangeText={actions.setRestBetweenSets}
+                onChangeText={actions.setSetsBreakDuration}
                 placeholder="45"
                 placeholderTextColor={Colors.dark.placeholder}
                 selectionColor={
@@ -338,22 +346,24 @@ export default function PlannerScreen() {
         </View>
       </View>
       <View style={{ alignItems: "center" }}>
-        <Link href="/workout" disabled={disabled} asChild>
-          <Pressable style={{ width: "50%" }}>
-            <ThemedText
-              type="defaultSemiBold"
-              style={[
-                styles.forwardButton,
-                disabled && {
-                  backgroundColor: Colors.dark.placeholder,
-                  color: Colors.dark.disabled,
-                },
-              ]}
-            >
-              DALEJ
-            </ThemedText>
-          </Pressable>
-        </Link>
+        <Pressable
+          onPress={onPressProceed}
+          disabled={disabled}
+          style={{ width: "50%" }}
+        >
+          <ThemedText
+            type="defaultSemiBold"
+            style={[
+              styles.forwardButton,
+              disabled && {
+                backgroundColor: Colors.dark.placeholder,
+                color: Colors.dark.disabled,
+              },
+            ]}
+          >
+            DALEJ
+          </ThemedText>
+        </Pressable>
       </View>
     </ParallaxScrollView>
   );
@@ -384,11 +394,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.light.backgroundInteractive,
   },
   forwardButton: {
+    backgroundColor: Colors.dark.backgroundInteractive,
+    color: Colors.dark.textInteractive,
     width: "100%",
     fontSize: 24,
-    backgroundColor: Colors.dark.backgroundInteractive,
     borderRadius: 2,
-    color: Colors.dark.textInteractive,
     textAlign: "center",
     padding: 10,
     marginTop: 25,
