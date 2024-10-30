@@ -16,10 +16,10 @@ import { useCallback } from "react";
 
 export default function PlannerScreen() {
   const theme = useColorScheme() ?? "light";
-  const { actions, state } = useWorkoutContext();
+  const { actions, plan } = useWorkoutContext();
   const router = useRouter();
 
-  const disabled = Object.values(state).some((value) => !value);
+  const disabled = Object.values(plan).some((value) => !value);
 
   const onPressProceed = useCallback(() => {
     if (!disabled) {

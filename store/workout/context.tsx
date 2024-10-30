@@ -1,28 +1,23 @@
 import { createContext, useContext } from "react";
 import type { ReactNode } from "react";
-import {
-  useWorkoutState,
-  WorkoutActions,
-  workoutInitialState,
-  WorkoutState,
-} from "./reducer";
+import { useWorkoutPlan, WorkoutPlanActions, WorkoutPlan } from "./reducer";
 
 type WorkoutContextProviderProps = {
   children: ReactNode;
 };
 
 const WorkoutContext = createContext<{
-  state: WorkoutState;
-  actions: WorkoutActions;
-}>({ state: workoutInitialState, actions: {} as WorkoutActions });
+  plan: WorkoutPlan;
+  actions: WorkoutPlanActions;
+}>({ plan: {} as WorkoutPlan, actions: {} as WorkoutPlanActions });
 
 export const WorkoutContextProvider = ({
   children,
 }: WorkoutContextProviderProps) => {
-  const { state, actions } = useWorkoutState();
+  const { plan, actions } = useWorkoutPlan();
 
   return (
-    <WorkoutContext.Provider value={{ state, actions }}>
+    <WorkoutContext.Provider value={{ plan, actions }}>
       {children}
     </WorkoutContext.Provider>
   );

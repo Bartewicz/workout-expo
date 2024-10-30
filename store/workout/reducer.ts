@@ -3,7 +3,7 @@ import type { Reducer } from "react";
 import type { Seconds } from "@/utils/types/aliases";
 import type { CamelCase } from "@/utils/types/casing";
 
-type WorkoutAction = {
+type WorkoutPlanAction = {
   type:
     | "SET_REPETITION_EXERCISES_COUNT"
     | "SET_REPETITION_EXERCISE_SETS_COUNT"
@@ -16,64 +16,53 @@ type WorkoutAction = {
   payload: number;
 };
 
-type WorkoutActionsKey = CamelCase<WorkoutAction["type"]>;
-export type WorkoutActions = Record<
-  WorkoutActionsKey,
+type WorkoutPlanActionsKey = CamelCase<WorkoutPlanAction["type"]>;
+export type WorkoutPlanActions = Record<
+  WorkoutPlanActionsKey,
   (textValue: string) => void
 >;
 
-export type WorkoutState = {
-  repetitionExercisesCount: number | undefined;
-  repetitionExercisesSetsCount: number | undefined;
-  repetitionExercisesRepetitionsCount: number | undefined;
-  timedExercisesCount: number | undefined;
-  timedExercisesSetsCount: number | undefined;
-  timedExercisesDuration: Seconds | undefined;
-  setsBreakDuration: Seconds | undefined;
-  exercisesBreakDuration: Seconds | undefined;
+export type WorkoutPlan = {
+  repetitionExercisesCount: number;
+  repetitionExercisesSetsCount: number;
+  repetitionExercisesRepetitionsCount: number;
+  timedExercisesCount: number;
+  timedExercisesSetsCount: number;
+  timedExercisesDuration: Seconds;
+  setsBreakDuration: Seconds;
+  exercisesBreakDuration: Seconds;
 } & {};
 
-export const workoutInitialState = {
-  repetitionExercisesCount: undefined,
-  repetitionExercisesSetsCount: undefined,
-  repetitionExercisesRepetitionsCount: undefined,
-  timedExercisesCount: undefined,
-  timedExercisesSetsCount: undefined,
-  timedExercisesDuration: undefined,
-  setsBreakDuration: undefined,
-  exercisesBreakDuration: undefined,
-};
-
-export const workoutReducer: Reducer<WorkoutState, WorkoutAction> = (
-  state,
+export const workoutPlanReducer: Reducer<WorkoutPlan, WorkoutPlanAction> = (
+  plan,
   action
 ) => {
   switch (action.type) {
     case "SET_REPETITION_EXERCISES_COUNT":
-      return { ...state, repetitionExercisesCount: action.payload };
+      return { ...plan, repetitionExercisesCount: action.payload };
     case "SET_REPETITION_EXERCISE_SETS_COUNT":
-      return { ...state, repetitionExercisesSetsCount: action.payload };
+      return { ...plan, repetitionExercisesSetsCount: action.payload };
     case "SET_REPETITION_EXERCISE_REPETITIONS_COUNT":
-      return { ...state, repetitionExercisesRepetitionsCount: action.payload };
+      return { ...plan, repetitionExercisesRepetitionsCount: action.payload };
     case "SET_TIMED_EXERCISES_COUNT":
-      return { ...state, timedExercisesCount: action.payload };
+      return { ...plan, timedExercisesCount: action.payload };
     case "SET_TIMED_EXERCISE_SETS_COUNT":
-      return { ...state, timedExercisesSetsCount: action.payload };
+      return { ...plan, timedExercisesSetsCount: action.payload };
     case "SET_TIMED_EXERCISE_DURATION":
-      return { ...state, timedExercisesDuration: action.payload };
+      return { ...plan, timedExercisesDuration: action.payload };
     case "SET_EXERCISES_BREAK_DURATION":
-      return { ...state, exercisesBreakDuration: action.payload };
+      return { ...plan, exercisesBreakDuration: action.payload };
     case "SET_SETS_BREAK_DURATION":
-      return { ...state, setsBreakDuration: action.payload };
+      return { ...plan, setsBreakDuration: action.payload };
     default:
       throw new Error("Unknown action");
   }
 };
 
-export const useWorkoutState = () => {
-  const [state, dispatch] = useReducer(workoutReducer, workoutInitialState);
+export const useWorkoutPlan = () => {
+  const [plan, dispatch] = useReducer(workoutPlanReducer, {} as WorkoutPlan);
 
-  const actions: WorkoutActions = useMemo(
+  const actions: WorkoutPlanActions = useMemo(
     () => ({
       setRepetitionExercisesCount: (textValue: string) =>
         dispatch({
@@ -119,5 +108,5 @@ export const useWorkoutState = () => {
     [dispatch]
   );
 
-  return { state, actions };
+  return { plan, actions };
 };
