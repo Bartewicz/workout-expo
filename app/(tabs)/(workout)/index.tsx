@@ -32,7 +32,7 @@ export default function PlannerScreen() {
       headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
       header={
         <View style={styles.titleContainer}>
-          <ThemedText type="title">Rozpocznij trening!</ThemedText>
+          <ThemedText type="title">Zaplanuj swój trening 📝</ThemedText>
           <HelloWave />
         </View>
       }
