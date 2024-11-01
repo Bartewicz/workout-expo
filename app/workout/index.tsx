@@ -3,12 +3,12 @@ import ParallaxScrollView from "@/components/view/ParallaxScrollView";
 import { useWorkoutContext } from "@/store/workout/context";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
-import type { Centiseconds } from "@/utils/types/aliases";
+import type { Centiseconds, Miliseconds } from "@/utils/types/aliases";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 import { WorkoutPlan } from "@/store/workout/reducer";
 
-type GlobalTimerState = "uninitialised" | "running" | "paused";
+type GlobalTimerState = "uninitialised" | "running" | "paused" | "completed";
 
 enum PeriodType {
   Exercise = "exercise",
@@ -37,73 +37,58 @@ type Exercise = (RepsExercise & {}) | (TimedExercise & {});
 
 interface BaseProgressState {
   uid: string;
-  startTime: Centiseconds | null;
-  endTime?: Centiseconds | null;
   currentPeriodType: PeriodType;
-  nextPeriodType?: PeriodType;
+  currentExercise?: Exercise;
   currentExerciseIndex?: number;
-  currentExerciseType?: ExerciseType;
   currentExerciseMaxSets?: number;
   currentSetIndex?: number;
-  nextExerciseType?: ExerciseType;
+  nextExercise?: Exercise;
   nextExerciseIndex?: number;
   nextExerciseMaxSets?: number;
   nextSetIndex?: number;
 }
 interface InitialWorkoutProgressState extends BaseProgressState {
   uid: "Initial";
-  startTime: null;
   currentPeriodType: PeriodType.Break;
-  nextPeriodType: PeriodType.Exercise;
-  nextExerciseType: ExerciseType;
+  nextExercise: Exercise;
   nextExerciseIndex: 0;
   nextExerciseMaxSets: number;
   nextSetIndex: 0;
 }
 interface ExerciseWorkoutProgressState extends BaseProgressState {
   uid: "ExerciseWorkout";
-  startTime: Centiseconds;
   currentPeriodType: PeriodType.Exercise;
-  nextPeriodType: PeriodType.Break | PeriodType.SetBreak;
   currentExerciseIndex: number;
-  currentExerciseType: ExerciseType;
+  currentExercise: Exercise;
   currentExerciseMaxSets: number;
   currentSetIndex: number;
-  nextSetIndex?: number;
+  nextSetIndex: number | undefined;
 }
 interface ExerciseSetBreakProgressState extends BaseProgressState {
   uid: "SetBreak";
-  startTime: Centiseconds;
   currentPeriodType: PeriodType.SetBreak;
-  nextPeriodType: PeriodType.Exercise;
   currentExerciseIndex: number;
-  currentExerciseType: ExerciseType;
+  currentExercise: Exercise;
   currentExerciseMaxSets: number;
   nextSetIndex: number;
 }
 interface BreakProgressState extends BaseProgressState {
   uid: "Break";
-  startTime: Centiseconds;
   currentPeriodType: PeriodType.Break;
-  nextPeriodType: PeriodType.Exercise;
-  nextExerciseType: ExerciseType;
+  nextExercise: Exercise;
   nextExerciseIndex: number;
   nextExerciseMaxSets: number;
   nextSetIndex: number;
 }
 interface LastExerciseProgressState extends BaseProgressState {
-  uid: "LastExercise";
-  startTime: Centiseconds;
+  uid: "LastExerciseLastSet";
   currentPeriodType: PeriodType.Exercise;
-  nextPeriodType: PeriodType.Break;
   currentExerciseIndex: number;
-  currentExerciseType: ExerciseType;
+  currentExercise: Exercise;
   currentSetIndex: number;
 }
 interface FinalWorkoutProgressState extends BaseProgressState {
   uid: "Completed";
-  startTime: Centiseconds;
-  endTime: Centiseconds;
   currentPeriodType: PeriodType.Break;
 }
 type WorkoutProgressState =
@@ -119,19 +104,19 @@ const ONE_HOUR_MS = 3_600_000;
 
 const timeFormatter = {
   seconds: new Intl.DateTimeFormat("default", {
-    second: "2-digit",
+    second: "numeric",
     fractionalSecondDigits: 2,
   }),
   minutes: new Intl.DateTimeFormat("default", {
     minute: "numeric",
     second: "2-digit",
-    fractionalSecondDigits: 2,
+    // fractionalSecondDigits: 2,
   }),
   hours: new Intl.DateTimeFormat("default", {
     hour: "numeric",
-    minute: "numeric",
+    minute: "2-digit",
     second: "2-digit",
-    fractionalSecondDigits: 2,
+    // fractionalSecondDigits: 2,
   }),
 };
 
@@ -168,22 +153,25 @@ export default function WorkoutScreen() {
   const exercises = composeExercisesFromPlan(plan);
 
   const [time, setTime] = useState<Centiseconds>(0);
+  const [startTime, setStartTime] = useState<Miliseconds>();
+  const [endTime, setEndTime] = useState<Miliseconds>();
   const [timestamps, setTimestamps] = useState<Timestamps[]>([]);
   const [globalTimerState, setGlobalTimerState] =
     useState<GlobalTimerState>("uninitialised");
   const [formatterType, setFormatterType] =
     useState<keyof typeof timeFormatter>("seconds");
 
-  const [progressState, setProgressState] = useState<WorkoutProgressState>({
+  const initialState: InitialWorkoutProgressState = {
     uid: "Initial",
-    startTime: null,
     currentPeriodType: PeriodType.Break,
-    nextPeriodType: PeriodType.Exercise,
-    nextExerciseType: exercises[0].type,
+    nextExercise: exercises[0],
     nextExerciseIndex: 0,
     nextExerciseMaxSets: exercises[0].sets.length,
     nextSetIndex: 0,
-  });
+  };
+
+  const [currentProgressState, setCurrentProgressState] =
+    useState<WorkoutProgressState>(initialState);
 
   // Global time passed
   useEffect(() => {
@@ -203,11 +191,11 @@ export default function WorkoutScreen() {
     let timeout: ReturnType<typeof setTimeout>;
 
     if (globalTimerState === "running") {
-      if (time < ONE_MINUTE_MS) {
+      if (time >= ONE_MINUTE_MS) {
         timeout = setTimeout(() => {
           setFormatterType("minutes");
         }, ONE_MINUTE_MS - time);
-      } else if (time < ONE_HOUR_MS) {
+      } else if (time >= ONE_HOUR_MS) {
         timeout = setTimeout(() => {
           setFormatterType("hours");
         }, ONE_HOUR_MS - time);
@@ -229,154 +217,152 @@ export default function WorkoutScreen() {
     }
   };
 
+  const onClickReset = () => {
+    setTime(0);
+    setGlobalTimerState("uninitialised");
+    setCurrentProgressState(initialState);
+  };
+
   const onPressWorkoutToggle = () => {
-    switch (globalTimerState) {
-      case "uninitialised": {
-        const currentState = progressState as InitialWorkoutProgressState;
-        const firstExercise = exercises[0];
+    if (currentProgressState.uid === "Initial") {
+      const {
+        nextExercise: firstExercise,
+        nextExerciseIndex: firstExerciseIndex,
+        nextExerciseMaxSets: firstExerciceMaxSets,
+        nextSetIndex: firstSetIndex,
+      } = currentProgressState;
+      const hasNextSet = 1 < firstExerciceMaxSets;
+      const hasNextExercise = exercises.at(1) !== undefined;
+
+      setStartTime(Date.now());
+      setCurrentProgressState({
+        uid: "ExerciseWorkout",
+        currentPeriodType: PeriodType.Exercise,
+        currentExercise: firstExercise,
+        currentExerciseIndex: firstExerciseIndex,
+        currentExerciseMaxSets: firstExerciceMaxSets,
+        currentSetIndex: firstSetIndex,
+        nextExerciseIndex: hasNextExercise ? 1 : undefined,
+        nextSetIndex: hasNextSet ? 1 : undefined,
+      });
+      setGlobalTimerState("running");
+      return;
+    }
+    if (currentProgressState.uid === "ExerciseWorkout") {
+      if (!!currentProgressState.nextSetIndex) {
+        // set break between sets
         const {
-          nextExerciseMaxSets: firstExerciceMaxSets,
-          nextSetIndex: firstSetIndex,
-        } = currentState;
+          currentExerciseIndex,
+          currentExerciseMaxSets,
+          currentExercise,
+          nextSetIndex,
+        } = currentProgressState;
 
-        setProgressState({
-          uid: "ExerciseWorkout",
-          startTime: Date.now(),
-          currentPeriodType: PeriodType.Exercise,
-          nextPeriodType:
-            firstExerciceMaxSets === 1 ? PeriodType.Break : PeriodType.SetBreak,
-          currentExerciseType: firstExercise.type,
-          currentExerciseIndex: 0,
-          currentExerciseMaxSets: firstExerciceMaxSets,
-          currentSetIndex: firstSetIndex,
+        setCurrentProgressState({
+          uid: "SetBreak",
+          currentPeriodType: PeriodType.SetBreak,
+          currentExercise,
+          currentExerciseIndex,
+          currentExerciseMaxSets,
+          nextSetIndex,
         });
-        setGlobalTimerState("running");
+        return;
       }
-      case "running": {
-        const currentState = progressState;
 
-        if (currentState.currentPeriodType === PeriodType.Exercise) {
-          const { startTime } = currentState;
-          // check if last -> set final state
-          if (currentState.uid === "LastExercise") {
-            setProgressState({
-              startTime,
-              uid: "Completed",
-              currentPeriodType: PeriodType.Break,
-              endTime: Date.now(),
-            });
-            // check if next set exists for current exercise -> set brake between sets
-          } else if (currentState.nextSetIndex) {
-            const {
-              startTime,
-              currentExerciseIndex,
-              currentExerciseMaxSets,
-              currentExerciseType,
-              nextSetIndex,
-            } = currentState;
+      // last set -> set break between exercises
+      const { currentExerciseIndex } = currentProgressState;
+      const nextExerciseIndex = currentExerciseIndex + 1;
+      const nextExercise = exercises[currentExerciseIndex + 1];
 
-            setProgressState({
-              startTime,
-              uid: "SetBreak",
-              currentPeriodType: PeriodType.SetBreak,
-              nextPeriodType: PeriodType.Exercise,
-              currentExerciseType,
-              currentExerciseIndex,
-              currentExerciseMaxSets,
-              nextSetIndex,
-            });
-          } else {
-            // there's no next set -> set break between exercises
-            const { currentExerciseIndex } = currentState;
-            const nextExerciseIndex = currentExerciseIndex + 1;
-            const nextExercise = exercises[nextExerciseIndex];
+      setCurrentProgressState({
+        uid: "Break",
+        currentPeriodType: PeriodType.Break,
+        nextExerciseIndex: nextExerciseIndex,
+        nextExerciseMaxSets: nextExercise.sets.length,
+        nextExercise: nextExercise,
+        nextSetIndex: 0,
+      });
+      return;
+    }
+    if (currentProgressState.uid === "SetBreak") {
+      // set next exercise set
+      const {
+        currentExercise,
+        currentExerciseIndex,
+        currentExerciseMaxSets,
+        nextSetIndex,
+      } = currentProgressState;
+      const hasNextSet = nextSetIndex + 1 < currentExerciseMaxSets;
+      const isCurrentExerciseLast =
+        currentExerciseIndex === exercises.length - 1;
+      const isNextSetLast = nextSetIndex + 1 === currentExerciseMaxSets;
 
-            setProgressState({
-              startTime,
-              uid: "Break",
-              currentPeriodType: PeriodType.Break,
-              nextPeriodType: PeriodType.Exercise,
-              nextExerciseIndex: nextExerciseIndex,
-              nextExerciseMaxSets: nextExercise.sets.length,
-              nextExerciseType: nextExercise.type,
-              nextSetIndex: 0,
-            });
-          }
-        } else if (currentState.currentPeriodType === PeriodType.SetBreak) {
-          const {
-            startTime,
-            currentExerciseType,
-            currentExerciseIndex,
-            currentExerciseMaxSets,
-            nextSetIndex,
-          } = currentState;
-          const hasNextSet = nextSetIndex + 1 < currentExerciseMaxSets;
+      console.log("exercises", exercises);
+      console.log("currentExerciseIndex", currentExerciseIndex);
+      console.log("exercises.length - 1", exercises.length - 1);
+      console.log("isCurrentExerciseLast", isCurrentExerciseLast);
+      console.log("isNextSetLast", isNextSetLast);
 
-          setProgressState({
-            startTime,
-            uid: "ExerciseWorkout",
-            currentPeriodType: PeriodType.Exercise,
-            currentExerciseType,
-            currentExerciseIndex,
-            currentExerciseMaxSets,
-            currentSetIndex: nextSetIndex,
-            nextPeriodType: hasNextSet ? PeriodType.SetBreak : PeriodType.Break,
-          });
-          // Period type is 'Break' for all 3 - uninitialised, exercise break, completed - but uid differs
-        } else if (currentState.uid === "Break") {
-          // Set next exercise
-          const {
-            startTime,
-            nextExerciseIndex,
-            nextExerciseMaxSets,
-            nextExerciseType,
-          } = currentState;
-          type ClashingProps = "uid" | "nextPeriodType";
-          const commonProps: Omit<
-            ExerciseWorkoutProgressState | LastExerciseProgressState,
-            ClashingProps
-          > = {
-            startTime,
-            currentPeriodType: PeriodType.Exercise,
-            currentExerciseType: nextExerciseType,
-            currentExerciseIndex: nextExerciseIndex,
-            currentExerciseMaxSets: nextExerciseMaxSets,
-            currentSetIndex: 0,
-          };
-          const isLastExercise = nextExerciseIndex === exercises.length - 1;
-
-          if (isLastExercise) {
-            const baseLastExerciseProps = commonProps as Omit<
-              LastExerciseProgressState,
-              ClashingProps
-            >;
-            setProgressState({
-              ...baseLastExerciseProps,
-              uid: "LastExercise",
-              nextPeriodType: PeriodType.Break,
-            } satisfies LastExerciseProgressState);
-          }
-          const baseNextExerciseProps = commonProps as Omit<
-            ExerciseWorkoutProgressState,
-            ClashingProps
-          >;
-          setProgressState({
-            ...baseNextExerciseProps,
-            uid: "ExerciseWorkout",
-            nextPeriodType:
-              nextExerciseMaxSets === 1
-                ? PeriodType.Break
-                : PeriodType.SetBreak,
-          });
-        }
+      if (isCurrentExerciseLast && isNextSetLast) {
+        setCurrentProgressState({
+          uid: "LastExerciseLastSet",
+          currentPeriodType: PeriodType.Exercise,
+          currentExercise,
+          currentExerciseIndex,
+          currentExerciseMaxSets,
+          currentSetIndex: nextSetIndex,
+        });
+        return;
       }
+
+      setCurrentProgressState({
+        uid: "ExerciseWorkout",
+        currentPeriodType: PeriodType.Exercise,
+        currentExercise,
+        currentExerciseIndex,
+        currentExerciseMaxSets,
+        currentSetIndex: nextSetIndex,
+        nextSetIndex: hasNextSet ? nextSetIndex + 1 : undefined,
+      });
+      return;
+    }
+    if (currentProgressState.uid === "Break") {
+      const { nextExercise, nextExerciseIndex, nextExerciseMaxSets } =
+        currentProgressState;
+      const hasNextSet = 1 < nextExerciseMaxSets;
+
+      // Set next exercise
+
+      setCurrentProgressState({
+        uid: "ExerciseWorkout",
+        currentPeriodType: PeriodType.Exercise,
+        currentExercise: nextExercise,
+        currentExerciseIndex: nextExerciseIndex,
+        currentExerciseMaxSets: nextExerciseMaxSets,
+        currentSetIndex: 0,
+        nextSetIndex: hasNextSet ? 1 : undefined,
+      });
+      return;
+    }
+    if (currentProgressState.uid === "LastExerciseLastSet") {
+      setGlobalTimerState("completed");
+      setEndTime(Date.now());
+      setCurrentProgressState({
+        uid: "Completed",
+        currentPeriodType: PeriodType.Break,
+      });
+      return;
+    }
+    if (currentProgressState.uid === "Completed") {
+      return void 0;
     }
   };
 
   const isGloballyUninitialised = globalTimerState === "uninitialised";
   const isGloballyPaused = globalTimerState === "paused";
-  const isExerciseTimeNow = progressState.currentPeriodType === "exercise";
-  const isCompleted = progressState.uid === "Completed";
+  const isExerciseTimeNow =
+    currentProgressState.currentPeriodType === "exercise";
+  const isCompleted = currentProgressState.uid === "Completed";
 
   return (
     <ParallaxScrollView
@@ -392,36 +378,64 @@ export default function WorkoutScreen() {
       }
     >
       <View style={styles.contentContainer}>
+        <ThemedText>Faza: {currentProgressState.uid}</ThemedText>
+        <ThemedText>
+          Nr ćwiczenia:{" "}
+          {typeof currentProgressState.currentExerciseIndex === "number" &&
+            currentProgressState.currentExerciseIndex + 1}
+        </ThemedText>
+        <ThemedText>
+          Typ: {currentProgressState.currentExercise?.type}
+        </ThemedText>
+        <ThemedText>
+          Set:{" "}
+          {typeof currentProgressState.currentSetIndex === "number" &&
+            currentProgressState.currentSetIndex + 1}
+        </ThemedText>
+        {currentProgressState.currentExercise?.type === "reps" ? (
+          <ThemedText>
+            Ilość powtórzeń:{" "}
+            {
+              currentProgressState.currentExercise?.sets[
+                currentProgressState.currentSetIndex || 0
+              ].reps
+            }
+          </ThemedText>
+        ) : currentProgressState.currentExercise?.type === "time" ? (
+          <ThemedText>
+            Czas trwania:{" "}
+            {timeFormatter.seconds.format(
+              currentProgressState.currentExercise.sets[
+                currentProgressState.currentSetIndex || 0
+              ].time
+            )}{" "}
+            s
+          </ThemedText>
+        ) : (
+          <ThemedText> </ThemedText>
+        )}
         <View style={styles.globalTimer}>
           <ThemedText>{timeFormatter[formatterType].format(time)}</ThemedText>
         </View>
-        <View style={styles.mainTimerContainer}>
-          <ThemedText style={styles.mainTimerText}>
-            {timeFormatter[formatterType].format(time)}
-          </ThemedText>
-        </View>
-        {/* TODO: Add bounce animation on click: https://reactnative.dev/docs/animations */}
-        <View style={styles.actionButtonsWrapper}>
-          {/* <Animated.View > */}
+        <View style={styles.mainContentContainer}>
           <Pressable
-            onPress={onPressWorkoutToggle}
-            disabled={isGloballyPaused}
-            style={getMainActionBtnStyles({
-              isExerciseTimeNow,
-              isGloballyPaused,
+            disabled={isGloballyUninitialised}
+            onPress={onClickReset}
+            style={getActionBtnResetStyles({
+              isGloballyUninitialised,
             })}
           >
             <Ionicons
-              name={getMainActionBtnIconName({
-                isCompleted,
-                isExerciseTimeNow,
-                isGloballyUninitialised,
-              })}
+              name="refresh"
               color={Colors.dark.backgroundInteractive}
               size={50}
             />
           </Pressable>
-          {/* </Animated.View> */}
+          <View style={styles.mainTimerContainer}>
+            <ThemedText style={styles.mainTimerText}>
+              {timeFormatter[formatterType].format(time)}
+            </ThemedText>
+          </View>
           <Pressable
             disabled={isGloballyUninitialised}
             onPress={onTogglePaused}
@@ -439,6 +453,27 @@ export default function WorkoutScreen() {
             />
           </Pressable>
         </View>
+        {/* TODO: Add bounce animation on click: https://reactnative.dev/docs/animations */}
+        {/* <Animated.View > */}
+        <Pressable
+          onPress={onPressWorkoutToggle}
+          disabled={isGloballyPaused}
+          style={getMainActionBtnStyles({
+            isExerciseTimeNow,
+            isGloballyPaused,
+          })}
+        >
+          <Ionicons
+            name={getMainActionBtnIconName({
+              isCompleted,
+              isExerciseTimeNow,
+              isGloballyUninitialised,
+            })}
+            color={Colors.dark.backgroundInteractive}
+            size={50}
+          />
+        </Pressable>
+        {/* </Animated.View> */}
       </View>
     </ParallaxScrollView>
   );
@@ -452,6 +487,10 @@ const styles = StyleSheet.create({
   contentContainer: { alignItems: "center" },
   globalTimer: {
     marginBottom: 20,
+  },
+  mainContentContainer: {
+    flexDirection: "row",
+    gap: 20,
   },
   mainTimerContainer: {
     alignItems: "center",
@@ -469,28 +508,31 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: "bold",
   },
-  actionButtonsWrapper: {
-    position: "relative",
-  },
   actionBtn: {
     borderColor: Colors.dark.backgroundInteractive,
     alignItems: "center",
     justifyContent: "center",
+  },
+  actionBtnReset: {
+    borderWidth: 4,
+    borderRadius: 40,
+    width: 80,
+    height: 80,
+    transform: "scaleX(-1) rotate(-45deg)",
+    paddingBottom: 5,
+  },
+  actionBtnTogglePause: {
+    borderWidth: 4,
+    borderRadius: 40,
+    alignSelf: "flex-end",
+    width: 80,
+    height: 80,
   },
   actionBtnWorkoutMain: {
     borderWidth: 5,
     borderRadius: 50,
     width: 100,
     height: 100,
-  },
-  actionBtnTogglePause: {
-    position: "absolute",
-    top: -30,
-    left: 130,
-    borderWidth: 4,
-    borderRadius: 40,
-    width: 80,
-    height: 80,
   },
 });
 
@@ -515,6 +557,20 @@ function getMainActionBtnIconName({
   }
 }
 
+function getActionBtnResetStyles({
+  isGloballyUninitialised,
+}: {
+  isGloballyUninitialised: boolean;
+}) {
+  return [
+    styles.actionBtn,
+    styles.actionBtnReset,
+    isGloballyUninitialised && {
+      opacity: 0.5,
+    },
+  ];
+}
+
 function getActionBtnTogglePauseStyles({
   isGloballyUninitialised,
   isGloballyPaused,
@@ -534,6 +590,7 @@ function getActionBtnTogglePauseStyles({
     },
   ];
 }
+
 function getMainActionBtnStyles({
   isExerciseTimeNow,
   isGloballyPaused,
