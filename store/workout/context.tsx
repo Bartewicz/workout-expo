@@ -14,10 +14,22 @@ const WorkoutContext = createContext<{
 export const WorkoutContextProvider = ({
   children,
 }: WorkoutContextProviderProps) => {
-  const { plan, actions } = useWorkoutPlan();
+  // Todo: eventually remove mock
+  // const { plan, actions } = useWorkoutPlan();
+  const { actions } = useWorkoutPlan();
+  const planMock: WorkoutPlan = {
+    repetitionExercisesCount: 8,
+    repetitionExercisesSetsCount: 4,
+    repetitionExercisesRepetitionsCount: 10,
+    timedExercisesCount: 1,
+    timedExercisesSetsCount: 4,
+    timedExercisesDuration: 45,
+    exercisesBreakDuration: 90,
+    setsBreakDuration: 45,
+  };
 
   return (
-    <WorkoutContext.Provider value={{ plan, actions }}>
+    <WorkoutContext.Provider value={{ plan: planMock, actions }}>
       {children}
     </WorkoutContext.Provider>
   );
