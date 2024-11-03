@@ -8,11 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 import { WorkoutPlan } from "@/store/workout/reducer";
 import { Exercise, RepsExercise, TimedExercise } from "@/utils/types/exercise";
-import { PeriodType } from "@/constants/PeriodType";
-import {
-  InitialWorkoutProgressState,
-  WorkoutProgressState,
-} from "@/utils/types/workoutProgress";
+import { useWorkoutProgressState } from "@/hooks/useWorkoutProgressState";
 
 type GlobalTimerState = "uninitialised" | "running" | "paused" | "completed";
 
@@ -87,17 +83,23 @@ export default function WorkoutScreen() {
   const [formatterType, setFormatterType] =
     useState<keyof typeof timeFormatter>("seconds");
 
-  const initialState: InitialWorkoutProgressState = {
-    uid: "Initial",
-    currentPeriodType: PeriodType.Break,
-    nextExercise: exercises[0],
-    nextExerciseIndex: 0,
-    nextExerciseMaxSets: exercises[0].sets.length,
-    nextSetIndex: 0,
-  };
+  const alterTimer = useCallback(() => {
+    setTime((time) => time + 10);
+  }, [setTime]);
 
-  const [currentProgressState, setCurrentProgressState] =
-    useState<WorkoutProgressState>(initialState);
+  const { currentProgressState, setInitialWorkoutState, setNextWorkoutState } =
+    useWorkoutProgressState({
+      exercises,
+      onInit: useCallback(() => {
+        setStartTime(Date.now());
+        setGlobalTimerState("running");
+        timerRefInterval.current = setInterval(alterTimer, 10);
+      }, [setStartTime, setGlobalTimerState, alterTimer]),
+      onComplete: useCallback(() => {
+        setEndTime(Date.now());
+        setGlobalTimerState("completed");
+      }, [setEndTime, setGlobalTimerState]),
+    });
 
   // Switch formatter
   useEffect(() => {
@@ -119,10 +121,6 @@ export default function WorkoutScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [globalTimerState]);
 
-  const alterTimer = useCallback(() => {
-    setTime((time) => time + 10);
-  }, [setTime]);
-
   const onTogglePaused = () => {
     switch (globalTimerState) {
       case "paused": {
@@ -142,137 +140,11 @@ export default function WorkoutScreen() {
   const onClickReset = () => {
     setTime(0);
     setGlobalTimerState("uninitialised");
-    setCurrentProgressState(initialState);
+    setInitialWorkoutState();
   };
 
   const onPressWorkoutToggle = () => {
-    if (currentProgressState.uid === "Initial") {
-      const {
-        nextExercise: firstExercise,
-        nextExerciseIndex: firstExerciseIndex,
-        nextExerciseMaxSets: firstExerciceMaxSets,
-        nextSetIndex: firstSetIndex,
-      } = currentProgressState;
-      const hasNextSet = 1 < firstExerciceMaxSets;
-      const hasNextExercise = exercises.at(1) !== undefined;
-
-      setCurrentProgressState({
-        uid: "ExerciseWorkout",
-        currentPeriodType: PeriodType.Exercise,
-        currentExercise: firstExercise,
-        currentExerciseIndex: firstExerciseIndex,
-        currentExerciseMaxSets: firstExerciceMaxSets,
-        currentSetIndex: firstSetIndex,
-        nextExerciseIndex: hasNextExercise ? 1 : undefined,
-        nextSetIndex: hasNextSet ? 1 : undefined,
-      });
-      setStartTime(Date.now());
-      setGlobalTimerState("running");
-      timerRefInterval.current = setInterval(alterTimer, 10);
-      return;
-    }
-    if (currentProgressState.uid === "ExerciseWorkout") {
-      if (!!currentProgressState.nextSetIndex) {
-        // set break between sets
-        const {
-          currentExerciseIndex,
-          currentExerciseMaxSets,
-          currentExercise,
-          nextSetIndex,
-        } = currentProgressState;
-
-        setCurrentProgressState({
-          uid: "SetBreak",
-          currentPeriodType: PeriodType.SetBreak,
-          currentExercise,
-          currentExerciseIndex,
-          currentExerciseMaxSets,
-          nextSetIndex,
-        });
-        return;
-      }
-
-      // last set -> set break between exercises
-      const { currentExerciseIndex } = currentProgressState;
-      const nextExerciseIndex = currentExerciseIndex + 1;
-      const nextExercise = exercises[currentExerciseIndex + 1];
-
-      setCurrentProgressState({
-        uid: "Break",
-        currentPeriodType: PeriodType.Break,
-        nextExerciseIndex: nextExerciseIndex,
-        nextExerciseMaxSets: nextExercise.sets.length,
-        nextExercise: nextExercise,
-        nextSetIndex: 0,
-      });
-      return;
-    }
-    if (currentProgressState.uid === "SetBreak") {
-      // set next exercise set
-      const {
-        currentExercise,
-        currentExerciseIndex,
-        currentExerciseMaxSets,
-        nextSetIndex,
-      } = currentProgressState;
-      const hasNextSet = nextSetIndex + 1 < currentExerciseMaxSets;
-      const isCurrentExerciseLast =
-        currentExerciseIndex === exercises.length - 1;
-      const isNextSetLast = nextSetIndex + 1 === currentExerciseMaxSets;
-
-      if (isCurrentExerciseLast && isNextSetLast) {
-        setCurrentProgressState({
-          uid: "LastExerciseLastSet",
-          currentPeriodType: PeriodType.Exercise,
-          currentExercise,
-          currentExerciseIndex,
-          currentExerciseMaxSets,
-          currentSetIndex: nextSetIndex,
-        });
-        return;
-      }
-
-      setCurrentProgressState({
-        uid: "ExerciseWorkout",
-        currentPeriodType: PeriodType.Exercise,
-        currentExercise,
-        currentExerciseIndex,
-        currentExerciseMaxSets,
-        currentSetIndex: nextSetIndex,
-        nextSetIndex: hasNextSet ? nextSetIndex + 1 : undefined,
-      });
-      return;
-    }
-    if (currentProgressState.uid === "Break") {
-      const { nextExercise, nextExerciseIndex, nextExerciseMaxSets } =
-        currentProgressState;
-      const hasNextSet = 1 < nextExerciseMaxSets;
-
-      // Set next exercise
-
-      setCurrentProgressState({
-        uid: "ExerciseWorkout",
-        currentPeriodType: PeriodType.Exercise,
-        currentExercise: nextExercise,
-        currentExerciseIndex: nextExerciseIndex,
-        currentExerciseMaxSets: nextExerciseMaxSets,
-        currentSetIndex: 0,
-        nextSetIndex: hasNextSet ? 1 : undefined,
-      });
-      return;
-    }
-    if (currentProgressState.uid === "LastExerciseLastSet") {
-      setGlobalTimerState("completed");
-      setEndTime(Date.now());
-      setCurrentProgressState({
-        uid: "Completed",
-        currentPeriodType: PeriodType.Break,
-      });
-      return;
-    }
-    if (currentProgressState.uid === "Completed") {
-      return void 0;
-    }
+    setNextWorkoutState();
   };
 
   const isGloballyUninitialised = globalTimerState === "uninitialised";
