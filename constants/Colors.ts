@@ -13,7 +13,7 @@ export const Colors = {
   text: {
     primary: "#5ad8e9",
     primaryDark: "#2f94a1",
-    secondary: "#0c56d0",
+    secondary: "#5a8ce9",
     ultraLight: "#ecedee",
   },
   common: {
