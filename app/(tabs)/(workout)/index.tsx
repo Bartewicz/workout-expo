@@ -12,9 +12,18 @@ import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { useWorkoutContext } from "@/store/workout/context";
 import { useRouter } from "expo-router";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 
 export default function PlannerScreen() {
+  const repExercisesInputRef = useRef<TextInput>(null);
+  const repSetsInputRef = useRef<TextInput>(null);
+  const repRepsInputRef = useRef<TextInput>(null);
+  const timedExercisesInputRef = useRef<TextInput>(null);
+  const timedSetsInputRef = useRef<TextInput>(null);
+  const timedDurationInputRef = useRef<TextInput>(null);
+  const exercisesBreakInputRef = useRef<TextInput>(null);
+  const setBreakInputRef = useRef<TextInput>(null);
+
   const theme = useColorScheme() ?? "light";
   const { actions, plan } = useWorkoutContext();
   const router = useRouter();
@@ -59,7 +68,10 @@ export default function PlannerScreen() {
           >
             <ThemedText type="defaultSemiBold">Ile ćwiczeń</ThemedText>
             <TextInput
+              ref={repExercisesInputRef}
+              onSubmitEditing={() => repSetsInputRef.current?.focus()}
               keyboardType="numeric"
+              enterKeyHint="next"
               maxLength={2}
               onChangeText={actions.setRepetitionExercisesCount}
               placeholder="1"
@@ -85,7 +97,10 @@ export default function PlannerScreen() {
           >
             <ThemedText type="defaultSemiBold">Ile serii</ThemedText>
             <TextInput
+              ref={repSetsInputRef}
+              onSubmitEditing={() => repRepsInputRef.current?.focus()}
               keyboardType="numeric"
+              enterKeyHint="next"
               maxLength={2}
               onChangeText={actions.setRepetitionExerciseSetsCount}
               placeholder="1"
@@ -111,7 +126,10 @@ export default function PlannerScreen() {
           >
             <ThemedText type="defaultSemiBold">Ile powtórzeń</ThemedText>
             <TextInput
+              ref={repRepsInputRef}
+              onSubmitEditing={() => timedExercisesInputRef.current?.focus()}
               keyboardType="numeric"
+              enterKeyHint="next"
               maxLength={2}
               onChangeText={actions.setRepetitionExerciseRepetitionsCount}
               placeholder="1"
@@ -150,7 +168,10 @@ export default function PlannerScreen() {
           >
             <ThemedText type="defaultSemiBold">Ile ćwiczeń</ThemedText>
             <TextInput
+              ref={timedExercisesInputRef}
+              onSubmitEditing={() => timedSetsInputRef.current?.focus()}
               keyboardType="numeric"
+              enterKeyHint="next"
               maxLength={2}
               onChangeText={actions.setTimedExercisesCount}
               placeholder="10"
@@ -176,7 +197,10 @@ export default function PlannerScreen() {
           >
             <ThemedText type="defaultSemiBold">Ile serii</ThemedText>
             <TextInput
+              ref={timedSetsInputRef}
+              onSubmitEditing={() => timedDurationInputRef.current?.focus()}
               keyboardType="numeric"
+              enterKeyHint="next"
               maxLength={2}
               onChangeText={actions.setTimedExerciseSetsCount}
               placeholder="1"
@@ -210,7 +234,10 @@ export default function PlannerScreen() {
               }}
             >
               <TextInput
+                ref={timedDurationInputRef}
+                onSubmitEditing={() => exercisesBreakInputRef.current?.focus()}
                 keyboardType="numeric"
+                enterKeyHint="next"
                 maxLength={3}
                 onChangeText={actions.setTimedExerciseDuration}
                 placeholder="45"
@@ -269,7 +296,10 @@ export default function PlannerScreen() {
               }}
             >
               <TextInput
+                ref={exercisesBreakInputRef}
+                onSubmitEditing={() => setBreakInputRef.current?.focus()}
                 keyboardType="numeric"
+                enterKeyHint="next"
                 maxLength={2}
                 onChangeText={actions.setExercisesBreakDuration}
                 placeholder="90"
@@ -315,9 +345,12 @@ export default function PlannerScreen() {
               }}
             >
               <TextInput
+                ref={setBreakInputRef}
+                onSubmitEditing={onPressProceed}
                 keyboardType="numeric"
-                maxLength={2}
+                enterKeyHint="go"
                 onChangeText={actions.setSetsBreakDuration}
+                maxLength={2}
                 placeholder="45"
                 placeholderTextColor={Colors.dark.placeholder}
                 selectionColor={
