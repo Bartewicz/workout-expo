@@ -3,101 +3,18 @@ import ParallaxScrollView from "@/components/view/ParallaxScrollView";
 import { useWorkoutContext } from "@/store/workout/context";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
-import type { Centiseconds, Miliseconds } from "@/utils/types/aliases";
+import type { Centiseconds, Miliseconds, TimeRange } from "@/utils/types/time";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 import { WorkoutPlan } from "@/store/workout/reducer";
+import { Exercise, RepsExercise, TimedExercise } from "@/utils/types/exercise";
+import { PeriodType } from "@/constants/PeriodType";
+import {
+  InitialWorkoutProgressState,
+  WorkoutProgressState,
+} from "@/utils/types/workoutProgress";
 
 type GlobalTimerState = "uninitialised" | "running" | "paused" | "completed";
-
-enum PeriodType {
-  Exercise = "exercise",
-  SetBreak = "setBreak",
-  Break = "break",
-}
-
-type Timestamps = {
-  startTime: Centiseconds;
-  endTime: Centiseconds;
-};
-
-type ExerciseType = "reps" | "time";
-type BaseExercise = {
-  type: ExerciseType;
-};
-type RepsExercise = BaseExercise & {
-  type: "reps";
-  sets: { reps: number }[];
-};
-type TimedExercise = BaseExercise & {
-  type: "time";
-  sets: { time: number }[];
-};
-type Exercise = (RepsExercise & {}) | (TimedExercise & {});
-
-interface BaseProgressState {
-  uid: string;
-  currentPeriodType: PeriodType;
-  currentExercise?: Exercise;
-  currentExerciseIndex?: number;
-  currentExerciseMaxSets?: number;
-  currentSetIndex?: number;
-  nextExercise?: Exercise;
-  nextExerciseIndex?: number;
-  nextExerciseMaxSets?: number;
-  nextSetIndex?: number;
-}
-interface InitialWorkoutProgressState extends BaseProgressState {
-  uid: "Initial";
-  currentPeriodType: PeriodType.Break;
-  nextExercise: Exercise;
-  nextExerciseIndex: 0;
-  nextExerciseMaxSets: number;
-  nextSetIndex: 0;
-}
-interface ExerciseWorkoutProgressState extends BaseProgressState {
-  uid: "ExerciseWorkout";
-  currentPeriodType: PeriodType.Exercise;
-  currentExerciseIndex: number;
-  currentExercise: Exercise;
-  currentExerciseMaxSets: number;
-  currentSetIndex: number;
-  nextSetIndex: number | undefined;
-}
-interface ExerciseSetBreakProgressState extends BaseProgressState {
-  uid: "SetBreak";
-  currentPeriodType: PeriodType.SetBreak;
-  currentExerciseIndex: number;
-  currentExercise: Exercise;
-  currentExerciseMaxSets: number;
-  nextSetIndex: number;
-}
-interface BreakProgressState extends BaseProgressState {
-  uid: "Break";
-  currentPeriodType: PeriodType.Break;
-  nextExercise: Exercise;
-  nextExerciseIndex: number;
-  nextExerciseMaxSets: number;
-  nextSetIndex: number;
-}
-interface LastExerciseProgressState extends BaseProgressState {
-  uid: "LastExerciseLastSet";
-  currentPeriodType: PeriodType.Exercise;
-  currentExerciseIndex: number;
-  currentExercise: Exercise;
-  currentSetIndex: number;
-}
-interface FinalWorkoutProgressState extends BaseProgressState {
-  uid: "Completed";
-  currentPeriodType: PeriodType.Break;
-}
-type WorkoutProgressState =
-  | InitialWorkoutProgressState
-  | ExerciseWorkoutProgressState
-  | ExerciseSetBreakProgressState
-  | BreakProgressState
-  | LastExerciseProgressState
-  | FinalWorkoutProgressState;
 
 const ONE_MINUTE_MS = 60_000;
 const ONE_HOUR_MS = 3_600_000;
@@ -164,7 +81,7 @@ export default function WorkoutScreen() {
   const [time, setTime] = useState<Centiseconds>(0);
   const [startTime, setStartTime] = useState<Miliseconds>();
   const [endTime, setEndTime] = useState<Miliseconds>();
-  const [timestamps, setTimestamps] = useState<Timestamps[]>([]);
+  const [timestamps, setTimestamps] = useState<TimeRange[]>([]);
   const [globalTimerState, setGlobalTimerState] =
     useState<GlobalTimerState>("uninitialised");
   const [formatterType, setFormatterType] =
@@ -199,6 +116,7 @@ export default function WorkoutScreen() {
     }
 
     return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [globalTimerState]);
 
   const alterTimer = useCallback(() => {

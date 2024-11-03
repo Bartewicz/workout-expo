@@ -1,6 +1,6 @@
 import { useMemo, useReducer } from "react";
 import type { Reducer } from "react";
-import type { Seconds } from "@/utils/types/aliases";
+import type { Seconds } from "@/utils/types/time";
 import type { CamelCase } from "@/utils/types/casing";
 
 type WorkoutPlanAction = {
