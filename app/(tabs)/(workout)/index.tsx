@@ -41,8 +41,8 @@ export default function PlannerScreen() {
       headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
       header={
         <View style={styles.titleContainer}>
-          <ThemedText type="title">Zaplanuj swój trening 📝</ThemedText>
           <HelloWave />
+          <ThemedText type="title">Zaplanuj swój trening 📝</ThemedText>
         </View>
       }
     >
@@ -72,6 +72,8 @@ export default function PlannerScreen() {
               onSubmitEditing={() => repSetsInputRef.current?.focus()}
               keyboardType="numeric"
               enterKeyHint="next"
+              // Todo: eventually remove default value
+              defaultValue="8"
               maxLength={2}
               onChangeText={actions.setRepetitionExercisesCount}
               placeholder="1"
@@ -101,6 +103,8 @@ export default function PlannerScreen() {
               onSubmitEditing={() => repRepsInputRef.current?.focus()}
               keyboardType="numeric"
               enterKeyHint="next"
+              // Todo: eventually remove default value
+              defaultValue="4"
               maxLength={2}
               onChangeText={actions.setRepetitionExerciseSetsCount}
               placeholder="1"
@@ -130,6 +134,8 @@ export default function PlannerScreen() {
               onSubmitEditing={() => timedExercisesInputRef.current?.focus()}
               keyboardType="numeric"
               enterKeyHint="next"
+              // Todo: eventually remove default value
+              defaultValue="10"
               maxLength={2}
               onChangeText={actions.setRepetitionExerciseRepetitionsCount}
               placeholder="1"
@@ -172,6 +178,8 @@ export default function PlannerScreen() {
               onSubmitEditing={() => timedSetsInputRef.current?.focus()}
               keyboardType="numeric"
               enterKeyHint="next"
+              // Todo: eventually remove default value
+              defaultValue="1"
               maxLength={2}
               onChangeText={actions.setTimedExercisesCount}
               placeholder="10"
@@ -201,6 +209,8 @@ export default function PlannerScreen() {
               onSubmitEditing={() => timedDurationInputRef.current?.focus()}
               keyboardType="numeric"
               enterKeyHint="next"
+              // Todo: eventually remove default value
+              defaultValue="4"
               maxLength={2}
               onChangeText={actions.setTimedExerciseSetsCount}
               placeholder="1"
@@ -238,6 +248,8 @@ export default function PlannerScreen() {
                 onSubmitEditing={() => exercisesBreakInputRef.current?.focus()}
                 keyboardType="numeric"
                 enterKeyHint="next"
+                // Todo: eventually remove default value
+                defaultValue="45"
                 maxLength={3}
                 onChangeText={actions.setTimedExerciseDuration}
                 placeholder="45"
@@ -300,6 +312,8 @@ export default function PlannerScreen() {
                 onSubmitEditing={() => setBreakInputRef.current?.focus()}
                 keyboardType="numeric"
                 enterKeyHint="next"
+                // Todo: eventually remove default value
+                defaultValue="90"
                 maxLength={2}
                 onChangeText={actions.setExercisesBreakDuration}
                 placeholder="90"
@@ -349,6 +363,8 @@ export default function PlannerScreen() {
                 onSubmitEditing={onPressProceed}
                 keyboardType="numeric"
                 enterKeyHint="go"
+                // Todo: eventually remove default value
+                defaultValue="45"
                 onChangeText={actions.setSetsBreakDuration}
                 maxLength={2}
                 placeholder="45"
