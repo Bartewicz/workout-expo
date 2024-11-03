@@ -3,11 +3,21 @@ import { StyleSheet } from "react-native";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/view/ThemedView";
+import { Colors } from "@/constants/Colors";
 
 export default function NotFoundScreen() {
   return (
     <>
-      <Stack.Screen options={{ title: "Oops!" }} />
+      <Stack.Screen
+        options={{
+          title: "Oops!",
+          headerStyle: {
+            backgroundColor: Colors.background.primary,
+            borderBottomColor: Colors.background.primaryDark,
+          } as { backgroundColor: string | undefined },
+          headerTitleStyle: { color: Colors.text.ultraLight },
+        }}
+      />
       <ThemedView style={styles.container}>
         <ThemedText type="title">This screen doesn't exist.</ThemedText>
         <Link href="/" style={styles.link}>

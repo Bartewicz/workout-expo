@@ -1,10 +1,4 @@
-import {
-  Pressable,
-  StyleSheet,
-  TextInput,
-  useColorScheme,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/view/ParallaxScrollView";
@@ -24,7 +18,6 @@ export default function PlannerScreen() {
   const exercisesBreakInputRef = useRef<TextInput>(null);
   const setBreakInputRef = useRef<TextInput>(null);
 
-  const theme = useColorScheme() ?? "light";
   const { actions, plan } = useWorkoutContext();
   const router = useRouter();
 
@@ -77,16 +70,9 @@ export default function PlannerScreen() {
               maxLength={2}
               onChangeText={actions.setRepetitionExercisesCount}
               placeholder="1"
-              placeholderTextColor={Colors.light.placeholder}
-              selectionColor={
-                theme === "light" ? Colors.dark.tint : Colors.light.tint
-              }
-              style={[
-                styles.numericInput,
-                theme === "light"
-                  ? styles.numericInputBgLight
-                  : styles.numericInputBgDark,
-              ]}
+              placeholderTextColor={Colors.text.primaryDark}
+              selectionColor={Colors.common.tint}
+              style={styles.numericInput}
             />
           </View>
           <View
@@ -108,16 +94,9 @@ export default function PlannerScreen() {
               maxLength={2}
               onChangeText={actions.setRepetitionExerciseSetsCount}
               placeholder="1"
-              placeholderTextColor={Colors.light.placeholder}
-              selectionColor={
-                theme === "light" ? Colors.dark.tint : Colors.light.tint
-              }
-              style={[
-                styles.numericInput,
-                theme === "light"
-                  ? styles.numericInputBgLight
-                  : styles.numericInputBgDark,
-              ]}
+              placeholderTextColor={Colors.text.primaryDark}
+              selectionColor={Colors.common.tint}
+              style={styles.numericInput}
             />
           </View>
           <View
@@ -139,16 +118,9 @@ export default function PlannerScreen() {
               maxLength={2}
               onChangeText={actions.setRepetitionExerciseRepetitionsCount}
               placeholder="1"
-              placeholderTextColor={Colors.light.placeholder}
-              selectionColor={
-                theme === "light" ? Colors.dark.tint : Colors.light.tint
-              }
-              style={[
-                styles.numericInput,
-                theme === "light"
-                  ? styles.numericInputBgLight
-                  : styles.numericInputBgDark,
-              ]}
+              placeholderTextColor={Colors.text.primaryDark}
+              selectionColor={Colors.common.tint}
+              style={styles.numericInput}
             />
           </View>
         </View>
@@ -183,16 +155,9 @@ export default function PlannerScreen() {
               maxLength={2}
               onChangeText={actions.setTimedExercisesCount}
               placeholder="10"
-              placeholderTextColor={Colors.light.placeholder}
-              selectionColor={
-                theme === "light" ? Colors.dark.tint : Colors.light.tint
-              }
-              style={[
-                styles.numericInput,
-                theme === "light"
-                  ? styles.numericInputBgLight
-                  : styles.numericInputBgDark,
-              ]}
+              placeholderTextColor={Colors.text.primaryDark}
+              selectionColor={Colors.common.tint}
+              style={styles.numericInput}
             />
           </View>
           <View
@@ -214,16 +179,9 @@ export default function PlannerScreen() {
               maxLength={2}
               onChangeText={actions.setTimedExerciseSetsCount}
               placeholder="1"
-              placeholderTextColor={Colors.light.placeholder}
-              selectionColor={
-                theme === "light" ? Colors.dark.tint : Colors.light.tint
-              }
-              style={[
-                styles.numericInput,
-                theme === "light"
-                  ? styles.numericInputBgLight
-                  : styles.numericInputBgDark,
-              ]}
+              placeholderTextColor={Colors.text.primaryDark}
+              selectionColor={Colors.common.tint}
+              style={styles.numericInput}
             />
           </View>
           <View
@@ -253,16 +211,9 @@ export default function PlannerScreen() {
                 maxLength={3}
                 onChangeText={actions.setTimedExerciseDuration}
                 placeholder="45"
-                placeholderTextColor={Colors.light.placeholder}
-                selectionColor={
-                  theme === "light" ? Colors.dark.tint : Colors.light.tint
-                }
-                style={[
-                  styles.numericInput,
-                  theme === "light"
-                    ? styles.numericInputBgLight
-                    : styles.numericInputBgDark,
-                ]}
+                placeholderTextColor={Colors.text.primaryDark}
+                selectionColor={Colors.common.tint}
+                style={styles.numericInput}
               />
               <ThemedText
                 type="defaultSemiBold"
@@ -317,16 +268,9 @@ export default function PlannerScreen() {
                 maxLength={2}
                 onChangeText={actions.setExercisesBreakDuration}
                 placeholder="90"
-                placeholderTextColor={Colors.dark.placeholder}
-                selectionColor={
-                  theme === "light" ? Colors.dark.tint : Colors.light.tint
-                }
-                style={[
-                  styles.numericInput,
-                  theme === "light"
-                    ? styles.numericInputBgLight
-                    : styles.numericInputBgDark,
-                ]}
+                placeholderTextColor={Colors.text.primaryDark}
+                selectionColor={Colors.common.tint}
+                style={styles.numericInput}
               />
               <ThemedText
                 type="defaultSemiBold"
@@ -368,16 +312,9 @@ export default function PlannerScreen() {
                 onChangeText={actions.setSetsBreakDuration}
                 maxLength={2}
                 placeholder="45"
-                placeholderTextColor={Colors.dark.placeholder}
-                selectionColor={
-                  theme === "light" ? Colors.dark.tint : Colors.light.tint
-                }
-                style={[
-                  styles.numericInput,
-                  theme === "light"
-                    ? styles.numericInputBgLight
-                    : styles.numericInputBgDark,
-                ]}
+                placeholderTextColor={Colors.text.primaryDark}
+                selectionColor={Colors.common.tint}
+                style={styles.numericInput}
               />
               <ThemedText
                 type="defaultSemiBold"
@@ -398,18 +335,9 @@ export default function PlannerScreen() {
         <Pressable
           onPress={onPressProceed}
           disabled={disabled}
-          style={{ width: "50%" }}
+          style={[{ width: "50%" }, disabled && { opacity: 0.75 }]}
         >
-          <ThemedText
-            type="defaultSemiBold"
-            style={[
-              styles.forwardButton,
-              disabled && {
-                backgroundColor: Colors.dark.placeholder,
-                color: Colors.dark.disabled,
-              },
-            ]}
-          >
+          <ThemedText type="defaultSemiBold" style={styles.forwardButton}>
             DALEJ
           </ThemedText>
         </Pressable>
@@ -429,6 +357,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   numericInput: {
+    backgroundColor: Colors.common.primary,
     paddingVertical: 7,
     borderRadius: 2,
     width: 60,
@@ -436,15 +365,9 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "600",
   },
-  numericInputBgDark: {
-    backgroundColor: Colors.dark.backgroundInteractive,
-  },
-  numericInputBgLight: {
-    backgroundColor: Colors.light.backgroundInteractive,
-  },
   forwardButton: {
-    backgroundColor: Colors.dark.backgroundInteractive,
-    color: Colors.dark.textInteractive,
+    backgroundColor: Colors.common.primary,
+    color: Colors.common.primaryLighter,
     width: "100%",
     fontSize: 24,
     borderRadius: 2,

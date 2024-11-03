@@ -427,11 +427,7 @@ export default function WorkoutScreen() {
               isGloballyUninitialised,
             })}
           >
-            <Ionicons
-              name="refresh"
-              color={Colors.dark.backgroundInteractive}
-              size={50}
-            />
+            <Ionicons name="refresh" color={Colors.common.primary} size={50} />
           </Pressable>
           <View style={styles.mainTimerContainer}>
             <ThemedText style={styles.mainTimerText}>
@@ -450,7 +446,7 @@ export default function WorkoutScreen() {
               name={
                 isGloballyUninitialised || isGloballyPaused ? "play" : "pause"
               }
-              color={Colors.dark.backgroundInteractive}
+              color={Colors.common.primary}
               size={50}
             />
           </Pressable>
@@ -471,7 +467,7 @@ export default function WorkoutScreen() {
               isExerciseTimeNow,
               isGloballyUninitialised,
             })}
-            color={Colors.dark.backgroundInteractive}
+            color={isCompleted ? Colors.common.gold : Colors.common.primary}
             size={50}
           />
         </Pressable>
@@ -509,20 +505,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 8,
     borderRadius: 90,
-    borderLeftColor: Colors.dark.backgroundInteractive,
-    borderRightColor: Colors.dark.backgroundInteractive,
+    borderLeftColor: Colors.common.primary,
+    borderRightColor: Colors.common.primary,
     width: 180,
     height: 180,
     zIndex: 100,
   },
   mainTimerText: {
-    color: Colors.dark.backgroundInteractive,
+    color: Colors.common.primary,
     fontSize: 30,
     lineHeight: 30,
     fontWeight: "bold",
   },
   actionBtn: {
-    borderColor: Colors.dark.backgroundInteractive,
+    borderColor: Colors.common.primary,
     alignItems: "center",
     justifyContent: "center",
   },
