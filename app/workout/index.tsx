@@ -1,7 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import ParallaxScrollView from "@/components/view/ParallaxScrollView";
 import { useWorkoutContext } from "@/store/workout/context";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import type { Centiseconds, Miliseconds } from "@/utils/types/aliases";
 import { Ionicons } from "@expo/vector-icons";
@@ -103,20 +103,28 @@ const ONE_MINUTE_MS = 60_000;
 const ONE_HOUR_MS = 3_600_000;
 
 const timeFormatter = {
-  seconds: new Intl.DateTimeFormat("default", {
-    second: "numeric",
-    fractionalSecondDigits: 2,
-  }),
+  seconds: {
+    format: (time: number) => {
+      const centisecondsStr = Math.floor(time / 10)
+        .toString()
+        .padStart(4, "0");
+      const [dozenSeconds, seconds, deciSecond, centiSecond] = centisecondsStr;
+      const formattedSeconds = seconds + "." + deciSecond + centiSecond;
+
+      if (dozenSeconds === "0") {
+        return formattedSeconds;
+      }
+      return dozenSeconds + formattedSeconds;
+    },
+  },
   minutes: new Intl.DateTimeFormat("default", {
     minute: "numeric",
     second: "2-digit",
-    // fractionalSecondDigits: 2,
   }),
   hours: new Intl.DateTimeFormat("default", {
     hour: "numeric",
     minute: "2-digit",
     second: "2-digit",
-    // fractionalSecondDigits: 2,
   }),
 };
 
@@ -152,6 +160,7 @@ export default function WorkoutScreen() {
   const { plan } = useWorkoutContext();
   const exercises = composeExercisesFromPlan(plan);
 
+  const timerRefInterval = useRef<ReturnType<typeof setInterval>>();
   const [time, setTime] = useState<Centiseconds>(0);
   const [startTime, setStartTime] = useState<Miliseconds>();
   const [endTime, setEndTime] = useState<Miliseconds>();
@@ -173,19 +182,6 @@ export default function WorkoutScreen() {
   const [currentProgressState, setCurrentProgressState] =
     useState<WorkoutProgressState>(initialState);
 
-  // Global time passed
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-
-    if (globalTimerState === "running") {
-      interval = setInterval(() => {
-        setTime((prevTime) => prevTime + 10);
-      }, 10);
-    }
-
-    return () => clearInterval(interval);
-  }, [globalTimerState, setTime]);
-
   // Switch formatter
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
@@ -205,14 +201,22 @@ export default function WorkoutScreen() {
     return () => clearTimeout(timeout);
   }, [globalTimerState]);
 
+  const alterTimer = useCallback(() => {
+    setTime((time) => time + 10);
+  }, [setTime]);
+
   const onTogglePaused = () => {
     switch (globalTimerState) {
-      case "running": {
-        return setGlobalTimerState("paused");
+      case "paused": {
+        setGlobalTimerState("running");
+        timerRefInterval.current = setInterval(alterTimer, 10);
+        return;
       }
-      case "paused":
+      case "running":
       default: {
-        return setGlobalTimerState("running");
+        setGlobalTimerState("paused");
+        clearInterval(timerRefInterval.current);
+        return;
       }
     }
   };
@@ -234,7 +238,6 @@ export default function WorkoutScreen() {
       const hasNextSet = 1 < firstExerciceMaxSets;
       const hasNextExercise = exercises.at(1) !== undefined;
 
-      setStartTime(Date.now());
       setCurrentProgressState({
         uid: "ExerciseWorkout",
         currentPeriodType: PeriodType.Exercise,
@@ -245,7 +248,9 @@ export default function WorkoutScreen() {
         nextExerciseIndex: hasNextExercise ? 1 : undefined,
         nextSetIndex: hasNextSet ? 1 : undefined,
       });
+      setStartTime(Date.now());
       setGlobalTimerState("running");
+      timerRefInterval.current = setInterval(alterTimer, 10);
       return;
     }
     if (currentProgressState.uid === "ExerciseWorkout") {
@@ -296,12 +301,6 @@ export default function WorkoutScreen() {
       const isCurrentExerciseLast =
         currentExerciseIndex === exercises.length - 1;
       const isNextSetLast = nextSetIndex + 1 === currentExerciseMaxSets;
-
-      console.log("exercises", exercises);
-      console.log("currentExerciseIndex", currentExerciseIndex);
-      console.log("exercises.length - 1", exercises.length - 1);
-      console.log("isCurrentExerciseLast", isCurrentExerciseLast);
-      console.log("isNextSetLast", isNextSetLast);
 
       if (isCurrentExerciseLast && isNextSetLast) {
         setCurrentProgressState({
@@ -366,10 +365,11 @@ export default function WorkoutScreen() {
 
   return (
     <ParallaxScrollView
+      height={100}
       headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
       header={
         <View style={styles.titleContainer}>
-          <ThemedText type="title">
+          <ThemedText type="title" style={styles.title}>
             {globalTimerState === "uninitialised"
               ? "Rozpocznij trening! 🚀"
               : "Budowanie mięśni w trakcie... 💪"}
@@ -414,8 +414,10 @@ export default function WorkoutScreen() {
         ) : (
           <ThemedText> </ThemedText>
         )}
-        <View style={styles.globalTimer}>
-          <ThemedText>{timeFormatter[formatterType].format(time)}</ThemedText>
+        <View style={styles.globalTimerContainer}>
+          <ThemedText style={styles.globalTimer}>
+            {timeFormatter[formatterType].format(time)}
+          </ThemedText>
         </View>
         <View style={styles.mainContentContainer}>
           <Pressable
@@ -484,13 +486,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  title: {
+    lineHeight: 38,
+  },
   contentContainer: { alignItems: "center" },
-  globalTimer: {
+  globalTimerContainer: {
     marginBottom: 20,
+  },
+  globalTimer: {
+    color: "#5A90E9",
+    fontSize: 24,
+    lineHeight: 24,
+    fontWeight: 600,
   },
   mainContentContainer: {
     flexDirection: "row",
-    gap: 20,
+    gap: 10,
+    marginBottom: 20,
   },
   mainTimerContainer: {
     alignItems: "center",
@@ -501,11 +513,12 @@ const styles = StyleSheet.create({
     borderRightColor: Colors.dark.backgroundInteractive,
     width: 180,
     height: 180,
-    marginBottom: 30,
+    zIndex: 100,
   },
   mainTimerText: {
     color: Colors.dark.backgroundInteractive,
     fontSize: 30,
+    lineHeight: 30,
     fontWeight: "bold",
   },
   actionBtn: {
