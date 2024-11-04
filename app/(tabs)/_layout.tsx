@@ -33,7 +33,7 @@ export default function TabLayout() {
             <TabBarIcon
               name={focused ? "barbell-sharp" : "barbell-outline"}
               color={color}
-              style={{ transform: "rotate(-45deg)" }}
+              style={{ transform: [{ rotate: "-45deg" }] }}
             />
           ),
         }}

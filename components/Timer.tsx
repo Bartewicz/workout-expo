@@ -1,89 +1,135 @@
-import { Centiseconds } from "@/utils/types/time";
-import { useEffect, useRef, useState } from "react";
+import type { Centiseconds } from "@/utils/types/time";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { StyleProp, TextStyle, ViewStyle } from "react-native";
 import { StyleSheet, View } from "react-native";
 import { ThemedText } from "./ThemedText";
-import { Colors } from "@/constants/Colors";
 
 type TimerProps = {
   state: "uninitialised" | "running" | "paused" | "completed";
+  fontSize: number;
+  containerStyle?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 };
 
-const timeFormatter = {
-  seconds: {
-    format: (time: number) => {
-      const centisecondsStr = time.toString().padStart(4, "0");
-      const [dozenSeconds, seconds, deciSecond, centiSecond] = centisecondsStr;
-      const formattedSeconds = seconds + "." + deciSecond + centiSecond;
+const TimeFormatter = (
+  time: number,
+  fontSize: number,
+  textStyle: StyleProp<TextStyle>
+) => {
+  const timeStr = (time / 100).toString();
 
-      if (dozenSeconds === "0") {
-        return formattedSeconds;
-      }
-      return dozenSeconds + formattedSeconds;
-    },
-  },
-  minutes: new Intl.DateTimeFormat("default", {
-    minute: "numeric",
-    second: "2-digit",
-  }),
-  hours: new Intl.DateTimeFormat("default", {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-  }),
-};
+  const [secondsRaw, centiSecondsRaw = "00"] = timeStr.split(".");
+  const centiSeconds =
+    centiSecondsRaw.length === 1 ? centiSecondsRaw + "0" : centiSecondsRaw;
+  const secondsNum = Number(secondsRaw);
+  const minutes = Math.floor(secondsNum / 60);
+  const seconds =
+    minutes > 0
+      ? (secondsNum % 60).toString().padStart(2, "0")
+      : secondsNum % 60;
 
-export const Timer = ({ state }: TimerProps) => {
-  const counterRef = useRef<number>(0);
-  const timerRefInterval = useRef<ReturnType<typeof setInterval>>();
-  const [time, setTime] = useState<Centiseconds>(0);
+  const translateX =
+    minutes > 9
+      ? (2 / 3) * fontSize
+      : minutes > 0
+      ? (2 / 5) * fontSize
+      : secondsNum < 10
+      ? (-1 / 6) * fontSize
+      : 0;
+  const containerPosition: StyleProp<ViewStyle> = {
+    transform: [{ translateX }],
+  };
 
-  console.log("Timer", counterRef.current++);
-  console.log("time", time);
-
-  useEffect(() => {
-    if (state === "running") {
-      timerRefInterval.current = setInterval(() => {
-        setTime((prevTime) => prevTime + 1);
-      }, 10);
-      return;
-    } else if (state === "uninitialised") {
-      setTime(0);
-    }
-
-    clearInterval(timerRefInterval.current);
-
-    return () => {
-      clearInterval(timerRefInterval.current);
-    };
-  }, [state]);
-
-  const formatterType = "seconds";
+  if (minutes > 0) {
+    return (
+      <View
+        style={[
+          { position: "relative", flexDirection: "row" },
+          containerPosition,
+        ]}
+      >
+        <ThemedText
+          style={[textStyle, styles.absolute, { right: (4 / 15) * fontSize }]}
+        >
+          {minutes}:{seconds}
+        </ThemedText>
+        <ThemedText style={textStyle}>.</ThemedText>
+        <ThemedText
+          style={[textStyle, styles.absolute, { left: (4 / 15) * fontSize }]}
+        >
+          {centiSeconds}
+        </ThemedText>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <ThemedText style={styles.time}>
-        {timeFormatter[formatterType].format(time)}
+    <View style={[{ position: "relative" }, containerPosition]}>
+      <ThemedText
+        style={[textStyle, styles.absolute, { right: (4 / 15) * 30 }]}
+      >
+        {seconds}
+      </ThemedText>
+      <ThemedText style={textStyle}>.</ThemedText>
+      <ThemedText style={[textStyle, styles.absolute, { left: (4 / 15) * 30 }]}>
+        {centiSeconds}
       </ThemedText>
     </View>
   );
 };
 
+export const Timer = ({
+  state,
+  containerStyle,
+  textStyle,
+  fontSize,
+}: TimerProps) => {
+  const timePassedRef = useRef<Centiseconds | null>(null);
+  const [time, setTime] = useState<Centiseconds>(0);
+
+  const advanceTimer = useCallback(
+    (_relativeStartTime: number) => () => {
+      setTime(Math.floor((Date.now() - _relativeStartTime) / 10));
+    },
+    []
+  );
+
+  useEffect(() => {
+    let timerIntervalRef: ReturnType<typeof setInterval>;
+    if (state === "running") {
+      let _relativeStartTime = Date.now();
+
+      if (!!timePassedRef.current) {
+        _relativeStartTime = Date.now() - timePassedRef.current * 10;
+      }
+
+      timerIntervalRef = setInterval(advanceTimer(_relativeStartTime), 10);
+
+      return () => {
+        clearInterval(timerIntervalRef);
+      };
+    }
+
+    if (state === "paused") {
+      timePassedRef.current = time;
+    }
+
+    if (state === "uninitialised") {
+      setTime(0);
+      timePassedRef.current = 0;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+
+  return (
+    <View style={containerStyle}>
+      {TimeFormatter(time, fontSize, textStyle)}
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 8,
-    borderRadius: 90,
-    borderLeftColor: Colors.common.primary,
-    borderRightColor: Colors.common.primary,
-    width: 180,
-    height: 180,
-    zIndex: 100,
-  },
-  time: {
-    color: Colors.common.primary,
-    fontSize: 30,
-    lineHeight: 30,
-    fontWeight: "bold",
+  absolute: {
+    position: "absolute",
   },
 });

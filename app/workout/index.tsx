@@ -1,9 +1,9 @@
 import { ThemedText } from "@/components/ThemedText";
 import ParallaxScrollView from "@/components/view/ParallaxScrollView";
 import { useWorkoutContext } from "@/store/workout/context";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
-import type { Centiseconds, Miliseconds, TimeRange } from "@/utils/types/time";
+import type { Miliseconds, TimeRange } from "@/utils/types/time";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 import { WorkoutPlan } from "@/store/workout/reducer";
@@ -14,7 +14,7 @@ import {
   WorkoutProgressState,
 } from "@/utils/types/workoutProgress";
 import { Timer } from "@/components/Timer";
-import { GlobalTimer } from "@/components/GlobalTimer";
+import { CountdownTimer } from "@/components/CountdownTimer";
 
 type GlobalTimerState = "uninitialised" | "running" | "paused" | "completed";
 
@@ -67,8 +67,6 @@ export default function WorkoutScreen() {
   const { plan } = useWorkoutContext();
   const exercises = composeExercisesFromPlan(plan);
 
-  const timerRefInterval = useRef<ReturnType<typeof setInterval>>();
-  const [time, setTime] = useState<Centiseconds>(0);
   const [startTime, setStartTime] = useState<Miliseconds>();
   const [endTime, setEndTime] = useState<Miliseconds>();
   const [timestamps, setTimestamps] = useState<TimeRange[]>([]);
@@ -84,7 +82,7 @@ export default function WorkoutScreen() {
     nextSetIndex: 0,
   };
 
-  const [currentProgressState, setCurrentProgressState] =
+  const [currentProgressState, setNextProgressState] =
     useState<WorkoutProgressState>(initialState);
 
   // Todo: maybe I can use that for determining timestamps?
@@ -106,7 +104,7 @@ export default function WorkoutScreen() {
 
   const onClickReset = () => {
     setGlobalTimerState("uninitialised");
-    setCurrentProgressState(initialState);
+    setNextProgressState(initialState);
   };
 
   const onPressWorkoutToggle = () => {
@@ -120,7 +118,7 @@ export default function WorkoutScreen() {
       const hasNextSet = 1 < firstExerciceMaxSets;
       const hasNextExercise = exercises.at(1) !== undefined;
 
-      setCurrentProgressState({
+      setNextProgressState({
         uid: "ExerciseWorkout",
         currentPeriodType: PeriodType.Exercise,
         currentExercise: firstExercise,
@@ -144,7 +142,7 @@ export default function WorkoutScreen() {
           nextSetIndex,
         } = currentProgressState;
 
-        setCurrentProgressState({
+        setNextProgressState({
           uid: "SetBreak",
           currentPeriodType: PeriodType.SetBreak,
           currentExercise,
@@ -152,6 +150,7 @@ export default function WorkoutScreen() {
           currentExerciseMaxSets,
           nextSetIndex,
         });
+        setStartTime(0);
         return;
       }
 
@@ -160,7 +159,7 @@ export default function WorkoutScreen() {
       const nextExerciseIndex = currentExerciseIndex + 1;
       const nextExercise = exercises[currentExerciseIndex + 1];
 
-      setCurrentProgressState({
+      setNextProgressState({
         uid: "Break",
         currentPeriodType: PeriodType.Break,
         nextExerciseIndex: nextExerciseIndex,
@@ -184,7 +183,7 @@ export default function WorkoutScreen() {
       const isNextSetLast = nextSetIndex + 1 === currentExerciseMaxSets;
 
       if (isCurrentExerciseLast && isNextSetLast) {
-        setCurrentProgressState({
+        setNextProgressState({
           uid: "LastExerciseLastSet",
           currentPeriodType: PeriodType.Exercise,
           currentExercise,
@@ -195,7 +194,7 @@ export default function WorkoutScreen() {
         return;
       }
 
-      setCurrentProgressState({
+      setNextProgressState({
         uid: "ExerciseWorkout",
         currentPeriodType: PeriodType.Exercise,
         currentExercise,
@@ -213,7 +212,7 @@ export default function WorkoutScreen() {
 
       // Set next exercise
 
-      setCurrentProgressState({
+      setNextProgressState({
         uid: "ExerciseWorkout",
         currentPeriodType: PeriodType.Exercise,
         currentExercise: nextExercise,
@@ -227,7 +226,7 @@ export default function WorkoutScreen() {
     if (currentProgressState.uid === "LastExerciseLastSet") {
       setGlobalTimerState("completed");
       setEndTime(Date.now());
-      setCurrentProgressState({
+      setNextProgressState({
         uid: "Completed",
         currentPeriodType: PeriodType.Break,
       });
@@ -243,23 +242,36 @@ export default function WorkoutScreen() {
   const isExerciseTimeNow =
     currentProgressState.currentPeriodType === "exercise";
   const isCompleted = currentProgressState.uid === "Completed";
+  const showCountdown =
+    currentProgressState.uid === "SetBreak" ||
+    currentProgressState.uid === "Break";
+
+  console.log("globalTimerState", globalTimerState);
+  console.log("currentProgressState.uid", currentProgressState.uid);
 
   return (
     <ParallaxScrollView
       height={100}
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
+      headerBackgroundColor={Colors.background.primary}
       header={
         <View style={styles.titleContainer}>
           <ThemedText type="title" style={styles.title}>
             {globalTimerState === "uninitialised"
               ? "Rozpocznij trening! 🚀"
+              : globalTimerState === "completed"
+              ? "Udało się! 🔥"
               : "Budowanie mięśni w trakcie... 💪"}
           </ThemedText>
         </View>
       }
     >
       <View style={styles.contentContainer}>
-        <GlobalTimer state={globalTimerState} />
+        <Timer
+          state={globalTimerState}
+          containerStyle={styles.globalTimerContainer}
+          textStyle={styles.globalTimerText}
+          fontSize={24}
+        />
         <View style={styles.mainContentContainer}>
           <Pressable
             disabled={isGloballyUninitialised}
@@ -270,18 +282,39 @@ export default function WorkoutScreen() {
           >
             <Ionicons name="refresh" color={Colors.common.primary} size={50} />
           </Pressable>
-          <Timer state={globalTimerState} />
+          {showCountdown ? (
+            <CountdownTimer
+              from={
+                currentProgressState.uid === "Break"
+                  ? plan.exercisesBreakDuration
+                  : plan.setsBreakDuration
+              }
+              state={globalTimerState}
+              containerStyle={styles.workoutTimerContainer}
+              textStyle={styles.workoutTimer}
+            />
+          ) : (
+            <Timer
+              state={globalTimerState}
+              containerStyle={styles.workoutTimerContainer}
+              textStyle={styles.workoutTimer}
+              fontSize={30}
+            />
+          )}
           <Pressable
-            disabled={isGloballyUninitialised}
+            disabled={isGloballyUninitialised || isCompleted}
             onPress={onTogglePaused}
             style={getActionBtnTogglePauseStyles({
+              isCompleted,
               isGloballyUninitialised,
               isGloballyPaused,
             })}
           >
             <Ionicons
               name={
-                isGloballyUninitialised || isGloballyPaused ? "play" : "pause"
+                isGloballyUninitialised || isGloballyPaused || isCompleted
+                  ? "play"
+                  : "pause"
               }
               color={Colors.common.primary}
               size={50}
@@ -294,6 +327,7 @@ export default function WorkoutScreen() {
           onPress={onPressWorkoutToggle}
           disabled={isGloballyPaused}
           style={getMainActionBtnStyles({
+            isCompleted,
             isExerciseTimeNow,
             isGloballyPaused,
           })}
@@ -364,7 +398,37 @@ const styles = StyleSheet.create({
   mainContentContainer: {
     flexDirection: "row",
     gap: 10,
-    marginBottom: 20,
+    marginBottom: 15,
+  },
+  globalTimerContainer: {
+    marginBottom: 32,
+    transform: [{ translateX: -5 }],
+    width: "100%",
+    alignItems: "center",
+  },
+  globalTimerText: {
+    color: Colors.text.secondary,
+    fontSize: 24,
+    lineHeight: 24,
+    fontWeight: 600,
+  },
+  workoutTimerContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 8,
+    borderRadius: 90,
+    borderLeftColor: Colors.common.primary,
+    borderRightColor: Colors.common.primary,
+    flexWrap: "nowrap",
+    width: 180,
+    height: 180,
+    zIndex: 100,
+  },
+  workoutTimer: {
+    color: Colors.common.primary,
+    fontSize: 30,
+    lineHeight: 30,
+    fontWeight: "bold",
   },
   actionBtn: {
     borderColor: Colors.common.primary,
@@ -376,7 +440,7 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     width: 80,
     height: 80,
-    transform: "scaleX(-1) rotate(-45deg)",
+    transform: [{ rotate: "-45deg" }, { scaleX: -1 }],
     paddingBottom: 5,
   },
   actionBtnTogglePause: {
@@ -430,9 +494,11 @@ function getActionBtnResetStyles({
 }
 
 function getActionBtnTogglePauseStyles({
+  isCompleted,
   isGloballyUninitialised,
   isGloballyPaused,
 }: {
+  isCompleted: boolean;
   isGloballyUninitialised: boolean;
   isGloballyPaused: boolean;
 }) {
@@ -443,16 +509,18 @@ function getActionBtnTogglePauseStyles({
     isNotRunning && {
       paddingLeft: 5,
     },
-    isGloballyUninitialised && {
+    (isCompleted || isGloballyUninitialised) && {
       opacity: 0.5,
     },
   ];
 }
 
 function getMainActionBtnStyles({
+  isCompleted,
   isExerciseTimeNow,
   isGloballyPaused,
 }: {
+  isCompleted: boolean;
   isExerciseTimeNow: boolean;
   isGloballyPaused: boolean;
 }) {
@@ -460,10 +528,11 @@ function getMainActionBtnStyles({
     styles.actionBtn,
     styles.actionBtnWorkoutMain,
     isExerciseTimeNow && {
-      transform: "rotate(-45deg)",
+      transform: [{ rotate: "-45deg" }],
     },
-    isGloballyPaused && {
-      opacity: 0.5,
-    },
+    isGloballyPaused &&
+      !isCompleted && {
+        opacity: 0.5,
+      },
   ];
 }
