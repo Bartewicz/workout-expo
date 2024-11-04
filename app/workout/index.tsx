@@ -1,7 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import ParallaxScrollView from "@/components/view/ParallaxScrollView";
 import { useWorkoutContext } from "@/store/workout/context";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import type { Centiseconds, Miliseconds, TimeRange } from "@/utils/types/time";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,11 +13,10 @@ import {
   InitialWorkoutProgressState,
   WorkoutProgressState,
 } from "@/utils/types/workoutProgress";
+import { Timer } from "@/components/Timer";
+import { GlobalTimer } from "@/components/GlobalTimer";
 
 type GlobalTimerState = "uninitialised" | "running" | "paused" | "completed";
-
-const ONE_MINUTE_MS = 60_000;
-const ONE_HOUR_MS = 3_600_000;
 
 const timeFormatter = {
   seconds: {
@@ -34,15 +33,6 @@ const timeFormatter = {
       return dozenSeconds + formattedSeconds;
     },
   },
-  minutes: new Intl.DateTimeFormat("default", {
-    minute: "numeric",
-    second: "2-digit",
-  }),
-  hours: new Intl.DateTimeFormat("default", {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-  }),
 };
 
 const composeExercisesFromPlan = (plan: WorkoutPlan): Exercise[] => {
@@ -84,8 +74,6 @@ export default function WorkoutScreen() {
   const [timestamps, setTimestamps] = useState<TimeRange[]>([]);
   const [globalTimerState, setGlobalTimerState] =
     useState<GlobalTimerState>("uninitialised");
-  const [formatterType, setFormatterType] =
-    useState<keyof typeof timeFormatter>("seconds");
 
   const initialState: InitialWorkoutProgressState = {
     uid: "Initial",
@@ -99,48 +87,24 @@ export default function WorkoutScreen() {
   const [currentProgressState, setCurrentProgressState] =
     useState<WorkoutProgressState>(initialState);
 
-  // Switch formatter
-  useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout>;
-
-    if (globalTimerState === "running") {
-      if (time >= ONE_MINUTE_MS) {
-        timeout = setTimeout(() => {
-          setFormatterType("minutes");
-        }, ONE_MINUTE_MS - time);
-      } else if (time >= ONE_HOUR_MS) {
-        timeout = setTimeout(() => {
-          setFormatterType("hours");
-        }, ONE_HOUR_MS - time);
-      }
-    }
-
-    return () => clearTimeout(timeout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [globalTimerState]);
-
-  const alterTimer = useCallback(() => {
-    setTime((time) => time + 10);
-  }, [setTime]);
+  // Todo: maybe I can use that for determining timestamps?
+  const { currentExerciseIndex } = currentProgressState;
 
   const onTogglePaused = () => {
     switch (globalTimerState) {
       case "paused": {
         setGlobalTimerState("running");
-        timerRefInterval.current = setInterval(alterTimer, 10);
         return;
       }
       case "running":
       default: {
         setGlobalTimerState("paused");
-        clearInterval(timerRefInterval.current);
         return;
       }
     }
   };
 
   const onClickReset = () => {
-    setTime(0);
     setGlobalTimerState("uninitialised");
     setCurrentProgressState(initialState);
   };
@@ -168,7 +132,6 @@ export default function WorkoutScreen() {
       });
       setStartTime(Date.now());
       setGlobalTimerState("running");
-      timerRefInterval.current = setInterval(alterTimer, 10);
       return;
     }
     if (currentProgressState.uid === "ExerciseWorkout") {
@@ -296,47 +259,7 @@ export default function WorkoutScreen() {
       }
     >
       <View style={styles.contentContainer}>
-        <ThemedText>Faza: {currentProgressState.uid}</ThemedText>
-        <ThemedText>
-          Nr ćwiczenia:{" "}
-          {typeof currentProgressState.currentExerciseIndex === "number" &&
-            currentProgressState.currentExerciseIndex + 1}
-        </ThemedText>
-        <ThemedText>
-          Typ: {currentProgressState.currentExercise?.type}
-        </ThemedText>
-        <ThemedText>
-          Set:{" "}
-          {typeof currentProgressState.currentSetIndex === "number" &&
-            currentProgressState.currentSetIndex + 1}
-        </ThemedText>
-        {currentProgressState.currentExercise?.type === "reps" ? (
-          <ThemedText>
-            Ilość powtórzeń:{" "}
-            {
-              currentProgressState.currentExercise?.sets[
-                currentProgressState.currentSetIndex || 0
-              ].reps
-            }
-          </ThemedText>
-        ) : currentProgressState.currentExercise?.type === "time" ? (
-          <ThemedText>
-            Czas trwania:{" "}
-            {timeFormatter.seconds.format(
-              currentProgressState.currentExercise.sets[
-                currentProgressState.currentSetIndex || 0
-              ].time
-            )}{" "}
-            s
-          </ThemedText>
-        ) : (
-          <ThemedText> </ThemedText>
-        )}
-        <View style={styles.globalTimerContainer}>
-          <ThemedText style={styles.globalTimer}>
-            {timeFormatter[formatterType].format(time)}
-          </ThemedText>
-        </View>
+        <GlobalTimer state={globalTimerState} />
         <View style={styles.mainContentContainer}>
           <Pressable
             disabled={isGloballyUninitialised}
@@ -347,11 +270,7 @@ export default function WorkoutScreen() {
           >
             <Ionicons name="refresh" color={Colors.common.primary} size={50} />
           </Pressable>
-          <View style={styles.mainTimerContainer}>
-            <ThemedText style={styles.mainTimerText}>
-              {timeFormatter[formatterType].format(time)}
-            </ThemedText>
-          </View>
+          <Timer state={globalTimerState} />
           <Pressable
             disabled={isGloballyUninitialised}
             onPress={onTogglePaused}
@@ -391,6 +310,44 @@ export default function WorkoutScreen() {
         </Pressable>
         {/* </Animated.View> */}
       </View>
+      <View style={{ alignItems: "center" }}>
+        <ThemedText>Faza: {currentProgressState.uid}</ThemedText>
+        <ThemedText>
+          Nr ćwiczenia:{" "}
+          {typeof currentProgressState.currentExerciseIndex === "number" &&
+            currentProgressState.currentExerciseIndex + 1}
+        </ThemedText>
+        <ThemedText>
+          Typ: {currentProgressState.currentExercise?.type}
+        </ThemedText>
+        <ThemedText>
+          Set:{" "}
+          {typeof currentProgressState.currentSetIndex === "number" &&
+            currentProgressState.currentSetIndex + 1}
+        </ThemedText>
+        {currentProgressState.currentExercise?.type === "reps" ? (
+          <ThemedText>
+            Ilość powtórzeń:{" "}
+            {
+              currentProgressState.currentExercise?.sets[
+                currentProgressState.currentSetIndex || 0
+              ].reps
+            }
+          </ThemedText>
+        ) : currentProgressState.currentExercise?.type === "time" ? (
+          <ThemedText>
+            Czas trwania:{" "}
+            {timeFormatter.seconds.format(
+              currentProgressState.currentExercise.sets[
+                currentProgressState.currentSetIndex || 0
+              ].time
+            )}{" "}
+            s
+          </ThemedText>
+        ) : (
+          <ThemedText> </ThemedText>
+        )}
+      </View>
     </ParallaxScrollView>
   );
 }
@@ -404,36 +361,10 @@ const styles = StyleSheet.create({
     lineHeight: 38,
   },
   contentContainer: { alignItems: "center" },
-  globalTimerContainer: {
-    marginBottom: 20,
-  },
-  globalTimer: {
-    color: "#5A90E9",
-    fontSize: 24,
-    lineHeight: 24,
-    fontWeight: 600,
-  },
   mainContentContainer: {
     flexDirection: "row",
     gap: 10,
     marginBottom: 20,
-  },
-  mainTimerContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 8,
-    borderRadius: 90,
-    borderLeftColor: Colors.common.primary,
-    borderRightColor: Colors.common.primary,
-    width: 180,
-    height: 180,
-    zIndex: 100,
-  },
-  mainTimerText: {
-    color: Colors.common.primary,
-    fontSize: 30,
-    lineHeight: 30,
-    fontWeight: "bold",
   },
   actionBtn: {
     borderColor: Colors.common.primary,
