@@ -1,26 +1,23 @@
-import { useMemo, useReducer } from "react";
-import type { Reducer } from "react";
-import type { Seconds } from "@/utils/types/time";
-import type { CamelCase } from "@/utils/types/casing";
+import { useMemo, useReducer } from 'react';
+import type { Reducer } from 'react';
+import type { Seconds } from '@/utils/types/time';
+import type { CamelCase } from '@/utils/types/casing';
 
 type WorkoutPlanAction = {
   type:
-    | "SET_REPETITION_EXERCISES_COUNT"
-    | "SET_REPETITION_EXERCISE_SETS_COUNT"
-    | "SET_REPETITION_EXERCISE_REPETITIONS_COUNT"
-    | "SET_TIMED_EXERCISES_COUNT"
-    | "SET_TIMED_EXERCISE_SETS_COUNT"
-    | "SET_TIMED_EXERCISE_DURATION"
-    | "SET_EXERCISES_BREAK_DURATION"
-    | "SET_SETS_BREAK_DURATION";
+    | 'SET_REPETITION_EXERCISES_COUNT'
+    | 'SET_REPETITION_EXERCISE_SETS_COUNT'
+    | 'SET_REPETITION_EXERCISE_REPETITIONS_COUNT'
+    | 'SET_TIMED_EXERCISES_COUNT'
+    | 'SET_TIMED_EXERCISE_SETS_COUNT'
+    | 'SET_TIMED_EXERCISE_DURATION'
+    | 'SET_EXERCISES_BREAK_DURATION'
+    | 'SET_SETS_BREAK_DURATION';
   payload: number;
 };
 
-type WorkoutPlanActionsKey = CamelCase<WorkoutPlanAction["type"]>;
-export type WorkoutPlanActions = Record<
-  WorkoutPlanActionsKey,
-  (textValue: string) => void
->;
+type WorkoutPlanActionsKey = CamelCase<WorkoutPlanAction['type']>;
+export type WorkoutPlanActions = Record<WorkoutPlanActionsKey, (textValue: string) => void>;
 
 export type WorkoutPlan = {
   repetitionExercisesCount: number;
@@ -33,29 +30,26 @@ export type WorkoutPlan = {
   exercisesBreakDuration: Seconds;
 } & {};
 
-export const workoutPlanReducer: Reducer<WorkoutPlan, WorkoutPlanAction> = (
-  plan,
-  action
-) => {
+export const workoutPlanReducer: Reducer<WorkoutPlan, WorkoutPlanAction> = (plan, action) => {
   switch (action.type) {
-    case "SET_REPETITION_EXERCISES_COUNT":
+    case 'SET_REPETITION_EXERCISES_COUNT':
       return { ...plan, repetitionExercisesCount: action.payload };
-    case "SET_REPETITION_EXERCISE_SETS_COUNT":
+    case 'SET_REPETITION_EXERCISE_SETS_COUNT':
       return { ...plan, repetitionExercisesSetsCount: action.payload };
-    case "SET_REPETITION_EXERCISE_REPETITIONS_COUNT":
+    case 'SET_REPETITION_EXERCISE_REPETITIONS_COUNT':
       return { ...plan, repetitionExercisesRepetitionsCount: action.payload };
-    case "SET_TIMED_EXERCISES_COUNT":
+    case 'SET_TIMED_EXERCISES_COUNT':
       return { ...plan, timedExercisesCount: action.payload };
-    case "SET_TIMED_EXERCISE_SETS_COUNT":
+    case 'SET_TIMED_EXERCISE_SETS_COUNT':
       return { ...plan, timedExercisesSetsCount: action.payload };
-    case "SET_TIMED_EXERCISE_DURATION":
+    case 'SET_TIMED_EXERCISE_DURATION':
       return { ...plan, timedExercisesDuration: action.payload };
-    case "SET_EXERCISES_BREAK_DURATION":
+    case 'SET_EXERCISES_BREAK_DURATION':
       return { ...plan, exercisesBreakDuration: action.payload };
-    case "SET_SETS_BREAK_DURATION":
+    case 'SET_SETS_BREAK_DURATION':
       return { ...plan, setsBreakDuration: action.payload };
     default:
-      throw new Error("Unknown action");
+      throw new Error('Unknown action');
   }
 };
 
@@ -66,46 +60,46 @@ export const useWorkoutPlan = () => {
     () => ({
       setRepetitionExercisesCount: (textValue: string) =>
         dispatch({
-          type: "SET_REPETITION_EXERCISES_COUNT",
+          type: 'SET_REPETITION_EXERCISES_COUNT',
           payload: Number(textValue),
         }),
       setRepetitionExerciseSetsCount: (textValue: string) =>
         dispatch({
-          type: "SET_REPETITION_EXERCISE_SETS_COUNT",
+          type: 'SET_REPETITION_EXERCISE_SETS_COUNT',
           payload: Number(textValue),
         }),
       setRepetitionExerciseRepetitionsCount: (textValue: string) =>
         dispatch({
-          type: "SET_REPETITION_EXERCISE_REPETITIONS_COUNT",
+          type: 'SET_REPETITION_EXERCISE_REPETITIONS_COUNT',
           payload: Number(textValue),
         }),
       setTimedExercisesCount: (textValue: string) =>
         dispatch({
-          type: "SET_TIMED_EXERCISES_COUNT",
+          type: 'SET_TIMED_EXERCISES_COUNT',
           payload: Number(textValue),
         }),
       setTimedExerciseSetsCount: (textValue: string) =>
         dispatch({
-          type: "SET_TIMED_EXERCISE_SETS_COUNT",
+          type: 'SET_TIMED_EXERCISE_SETS_COUNT',
           payload: Number(textValue),
         }),
       setTimedExerciseDuration: (textValue: string) =>
         dispatch({
-          type: "SET_TIMED_EXERCISE_DURATION",
+          type: 'SET_TIMED_EXERCISE_DURATION',
           payload: Number(textValue),
         }),
       setExercisesBreakDuration: (textValue: string) =>
         dispatch({
-          type: "SET_EXERCISES_BREAK_DURATION",
+          type: 'SET_EXERCISES_BREAK_DURATION',
           payload: Number(textValue),
         }),
       setSetsBreakDuration: (textValue: string) =>
         dispatch({
-          type: "SET_SETS_BREAK_DURATION",
+          type: 'SET_SETS_BREAK_DURATION',
           payload: Number(textValue),
         }),
     }),
-    [dispatch]
+    [dispatch],
   );
 
   return { plan, actions };

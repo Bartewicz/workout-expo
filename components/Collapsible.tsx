@@ -1,15 +1,12 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { PropsWithChildren, useState } from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { PropsWithChildren, useState } from 'react';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/view/ThemedView";
-import { Colors } from "@/constants/Colors";
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/view/ThemedView';
+import { Colors } from '@/constants/Colors';
 
-export function Collapsible({
-  children,
-  title,
-}: PropsWithChildren & { title: string }) {
+export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -20,7 +17,7 @@ export function Collapsible({
         activeOpacity={0.8}
       >
         <Ionicons
-          name={isOpen ? "chevron-down" : "chevron-forward-outline"}
+          name={isOpen ? 'chevron-down' : 'chevron-forward-outline'}
           size={18}
           color={Colors.common.greyMedium}
         />
@@ -33,8 +30,8 @@ export function Collapsible({
 
 const styles = StyleSheet.create({
   heading: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
   },
   content: {

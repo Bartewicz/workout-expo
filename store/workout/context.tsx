@@ -1,6 +1,6 @@
-import { createContext, useContext } from "react";
-import type { ReactNode } from "react";
-import { useWorkoutPlan, WorkoutPlanActions, WorkoutPlan } from "./reducer";
+import { createContext, useContext } from 'react';
+import type { ReactNode } from 'react';
+import { useWorkoutPlan, WorkoutPlanActions, WorkoutPlan } from './reducer';
 
 type WorkoutContextProviderProps = {
   children: ReactNode;
@@ -11,9 +11,7 @@ const WorkoutContext = createContext<{
   actions: WorkoutPlanActions;
 }>({ plan: {} as WorkoutPlan, actions: {} as WorkoutPlanActions });
 
-export const WorkoutContextProvider = ({
-  children,
-}: WorkoutContextProviderProps) => {
+export const WorkoutContextProvider = ({ children }: WorkoutContextProviderProps) => {
   // Todo: eventually remove mock
   // const { plan, actions } = useWorkoutPlan();
   const { actions } = useWorkoutPlan();

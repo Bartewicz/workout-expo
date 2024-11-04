@@ -1,5 +1,5 @@
-import { PeriodType } from "@/constants/PeriodType";
-import type { Exercise } from "./exercise";
+import { PeriodType } from '@/constants/PeriodType';
+import type { Exercise } from './exercise';
 
 interface BaseProgressState {
   uid: string;
@@ -15,7 +15,7 @@ interface BaseProgressState {
 }
 
 export interface InitialWorkoutProgressState extends BaseProgressState {
-  uid: "Initial";
+  uid: 'Initial';
   currentPeriodType: PeriodType.Break;
   nextExercise: Exercise;
   nextExerciseIndex: 0;
@@ -24,7 +24,7 @@ export interface InitialWorkoutProgressState extends BaseProgressState {
 }
 
 interface ExerciseWorkoutProgressState extends BaseProgressState {
-  uid: "ExerciseWorkout";
+  uid: 'ExerciseWorkout';
   currentPeriodType: PeriodType.Exercise;
   currentExerciseIndex: number;
   currentExercise: Exercise;
@@ -34,7 +34,7 @@ interface ExerciseWorkoutProgressState extends BaseProgressState {
 }
 
 interface ExerciseSetBreakProgressState extends BaseProgressState {
-  uid: "SetBreak";
+  uid: 'SetBreak';
   currentPeriodType: PeriodType.SetBreak;
   currentExerciseIndex: number;
   currentExercise: Exercise;
@@ -43,7 +43,7 @@ interface ExerciseSetBreakProgressState extends BaseProgressState {
 }
 
 interface BreakProgressState extends BaseProgressState {
-  uid: "Break";
+  uid: 'Break';
   currentPeriodType: PeriodType.Break;
   nextExercise: Exercise;
   nextExerciseIndex: number;
@@ -52,7 +52,7 @@ interface BreakProgressState extends BaseProgressState {
 }
 
 interface LastExerciseProgressState extends BaseProgressState {
-  uid: "LastExerciseLastSet";
+  uid: 'LastExerciseLastSet';
   currentPeriodType: PeriodType.Exercise;
   currentExerciseIndex: number;
   currentExercise: Exercise;
@@ -60,7 +60,7 @@ interface LastExerciseProgressState extends BaseProgressState {
 }
 
 interface FinalWorkoutProgressState extends BaseProgressState {
-  uid: "Completed";
+  uid: 'Completed';
   currentPeriodType: PeriodType.Break;
 }
 

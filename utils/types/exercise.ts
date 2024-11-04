@@ -1,16 +1,16 @@
-type ExerciseType = "reps" | "time";
+type ExerciseType = 'reps' | 'time';
 
 type BaseExercise = {
   type: ExerciseType;
 };
 
 export type RepsExercise = BaseExercise & {
-  type: "reps";
+  type: 'reps';
   sets: { reps: number }[];
 };
 
 export type TimedExercise = BaseExercise & {
-  type: "time";
+  type: 'time';
   sets: { time: number }[];
 };
 

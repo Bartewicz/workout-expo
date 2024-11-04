@@ -1,12 +1,12 @@
-import { Pressable, StyleSheet, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
-import { HelloWave } from "@/components/HelloWave";
-import ParallaxScrollView from "@/components/view/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { Colors } from "@/constants/Colors";
-import { useWorkoutContext } from "@/store/workout/context";
-import { useRouter } from "expo-router";
-import { useCallback, useRef } from "react";
+import { HelloWave } from '@/components/HelloWave';
+import ParallaxScrollView from '@/components/view/ParallaxScrollView';
+import { ThemedText } from '@/components/ThemedText';
+import { Colors } from '@/constants/Colors';
+import { useWorkoutContext } from '@/store/workout/context';
+import { useRouter } from 'expo-router';
+import { useCallback, useRef } from 'react';
 
 export default function PlannerScreen() {
   const repExercisesInputRef = useRef<TextInput>(null);
@@ -25,7 +25,7 @@ export default function PlannerScreen() {
 
   const onPressProceed = useCallback(() => {
     if (!disabled) {
-      router.push("/workout");
+      router.push('/workout');
     }
   }, [disabled]);
 
@@ -39,23 +39,23 @@ export default function PlannerScreen() {
       }
     >
       <View style={styles.stepContainer}>
-        <ThemedText type="subtitle" style={{ textAlign: "center" }}>
+        <ThemedText type="subtitle" style={{ textAlign: 'center' }}>
           1. Ćwiczenia na ilość powtórzeń:
         </ThemedText>
         <View
           style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "center",
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
           }}
         >
           <View
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
               gap: 10,
-              width: "30%",
+              width: '30%',
             }}
           >
             <ThemedText type="defaultSemiBold">Ile ćwiczeń</ThemedText>
@@ -76,10 +76,10 @@ export default function PlannerScreen() {
           </View>
           <View
             style={{
-              display: "flex",
-              alignItems: "center",
+              display: 'flex',
+              alignItems: 'center',
               gap: 10,
-              width: "30%",
+              width: '30%',
             }}
           >
             <ThemedText type="defaultSemiBold">Ile serii</ThemedText>
@@ -100,10 +100,10 @@ export default function PlannerScreen() {
           </View>
           <View
             style={{
-              display: "flex",
-              alignItems: "center",
+              display: 'flex',
+              alignItems: 'center',
               gap: 10,
-              width: "30%",
+              width: '30%',
             }}
           >
             <ThemedText type="defaultSemiBold">Ile powtórzeń</ThemedText>
@@ -125,22 +125,22 @@ export default function PlannerScreen() {
         </View>
       </View>
       <View style={styles.stepContainer}>
-        <ThemedText type="subtitle" style={{ textAlign: "center" }}>
+        <ThemedText type="subtitle" style={{ textAlign: 'center' }}>
           2. Ćwiczenia na czas:
         </ThemedText>
         <View
           style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "center",
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
           }}
         >
           <View
             style={{
-              display: "flex",
-              alignItems: "center",
+              display: 'flex',
+              alignItems: 'center',
               gap: 10,
-              width: "30%",
+              width: '30%',
             }}
           >
             <ThemedText type="defaultSemiBold">Ile ćwiczeń</ThemedText>
@@ -161,10 +161,10 @@ export default function PlannerScreen() {
           </View>
           <View
             style={{
-              display: "flex",
-              alignItems: "center",
+              display: 'flex',
+              alignItems: 'center',
               gap: 10,
-              width: "30%",
+              width: '30%',
             }}
           >
             <ThemedText type="defaultSemiBold">Ile serii</ThemedText>
@@ -185,19 +185,19 @@ export default function PlannerScreen() {
           </View>
           <View
             style={{
-              display: "flex",
-              alignItems: "center",
+              display: 'flex',
+              alignItems: 'center',
               gap: 10,
-              width: "30%",
+              width: '30%',
             }}
           >
             <ThemedText type="defaultSemiBold">Czas trwania serii</ThemedText>
             <View
               style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                position: "relative",
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                position: 'relative',
               }}
             >
               <TextInput
@@ -217,7 +217,7 @@ export default function PlannerScreen() {
               <ThemedText
                 type="defaultSemiBold"
                 style={{
-                  position: "absolute",
+                  position: 'absolute',
                   fontSize: 32,
                   lineHeight: 32,
                   left: 65,
@@ -230,31 +230,31 @@ export default function PlannerScreen() {
         </View>
       </View>
       <View style={styles.stepContainer}>
-        <ThemedText type="subtitle" style={{ textAlign: "center" }}>
+        <ThemedText type="subtitle" style={{ textAlign: 'center' }}>
           3. Wybierz czas przerw
         </ThemedText>
         <View
           style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "center",
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
           }}
         >
           <View
             style={{
-              display: "flex",
-              alignItems: "center",
+              display: 'flex',
+              alignItems: 'center',
               gap: 10,
-              width: "45%",
+              width: '45%',
             }}
           >
             <ThemedText type="defaultSemiBold">Między ćwiczeniami:</ThemedText>
             <View
               style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                position: "relative",
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                position: 'relative',
               }}
             >
               <TextInput
@@ -274,7 +274,7 @@ export default function PlannerScreen() {
               <ThemedText
                 type="defaultSemiBold"
                 style={{
-                  position: "absolute",
+                  position: 'absolute',
                   fontSize: 32,
                   lineHeight: 32,
                   left: 65,
@@ -286,19 +286,19 @@ export default function PlannerScreen() {
           </View>
           <View
             style={{
-              display: "flex",
-              alignItems: "center",
+              display: 'flex',
+              alignItems: 'center',
               gap: 10,
-              width: "45%",
+              width: '45%',
             }}
           >
             <ThemedText type="defaultSemiBold">Między seriami:</ThemedText>
             <View
               style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                position: "relative",
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                position: 'relative',
               }}
             >
               <TextInput
@@ -318,7 +318,7 @@ export default function PlannerScreen() {
               <ThemedText
                 type="defaultSemiBold"
                 style={{
-                  position: "absolute",
+                  position: 'absolute',
                   fontSize: 32,
                   lineHeight: 32,
                   left: 65,
@@ -330,11 +330,11 @@ export default function PlannerScreen() {
           </View>
         </View>
       </View>
-      <View style={{ alignItems: "center" }}>
+      <View style={{ alignItems: 'center' }}>
         <Pressable
           onPress={onPressProceed}
           disabled={disabled}
-          style={[{ width: "50%" }, disabled && { opacity: 0.75 }]}
+          style={[{ width: '50%' }, disabled && { opacity: 0.75 }]}
         >
           <ThemedText type="defaultSemiBold" style={styles.forwardButton}>
             DALEJ
@@ -347,8 +347,8 @@ export default function PlannerScreen() {
 
 const styles = StyleSheet.create({
   titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
   stepContainer: {
@@ -360,17 +360,17 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderRadius: 2,
     width: 60,
-    textAlign: "center",
+    textAlign: 'center',
     fontSize: 32,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   forwardButton: {
     backgroundColor: Colors.common.primary,
     color: Colors.common.primaryLighter,
-    width: "100%",
+    width: '100%',
     fontSize: 24,
     borderRadius: 2,
-    textAlign: "center",
+    textAlign: 'center',
     padding: 10,
     marginTop: 25,
   },
