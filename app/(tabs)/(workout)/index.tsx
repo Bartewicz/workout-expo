@@ -31,7 +31,6 @@ export default function PlannerScreen() {
 
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
       header={
         <View style={styles.titleContainer}>
           <HelloWave />
