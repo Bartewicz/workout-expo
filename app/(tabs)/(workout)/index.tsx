@@ -7,6 +7,11 @@ import { Colors } from '@/constants/Colors';
 import { useWorkoutContext } from '@/store/workout/context';
 import { useRouter } from 'expo-router';
 import { useCallback, useRef } from 'react';
+import {
+  getHasPlanAllRepsExerciseInput,
+  getHasPlanAllTimedExerciseInput,
+  getHasPlanAllBreakDurations,
+} from '@/utils/workout/plan';
 
 export default function PlannerScreen() {
   const repExercisesInputRef = useRef<TextInput>(null);
@@ -21,19 +26,9 @@ export default function PlannerScreen() {
   const { actions, plan } = useWorkoutContext();
   const router = useRouter();
 
-  const hasAllRepsExerciseInput = [
-    plan.repetitionExercisesCount,
-    plan.repetitionExercisesSetsCount,
-    plan.repetitionExercisesRepetitionsCount,
-  ].every((value) => value);
-  const hasAllTimedExerciseInput = [
-    plan.timedExercisesCount,
-    plan.timedExercisesSetsCount,
-    plan.timedExercisesDuration,
-  ].every((value) => value);
-  const hasAllBreakDuratoins = [plan.exercisesBreakDuration, plan.setsBreakDuration].every(
-    (value) => value
-  );
+  const hasAllRepsExerciseInput = getHasPlanAllRepsExerciseInput(plan);
+  const hasAllTimedExerciseInput = getHasPlanAllTimedExerciseInput(plan);
+  const hasAllBreakDuratoins = getHasPlanAllBreakDurations(plan);
   const disabled = !((hasAllRepsExerciseInput || hasAllTimedExerciseInput) && hasAllBreakDuratoins);
 
   const onPressProceed = useCallback(() => {

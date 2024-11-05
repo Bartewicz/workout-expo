@@ -12,6 +12,11 @@ import { PeriodType } from '@/constants/PeriodType';
 import { InitialWorkoutProgressState, WorkoutProgressState } from '@/utils/types/workoutProgress';
 import { Timer } from '@/components/Timer';
 import { CountdownTimer } from '@/components/CountdownTimer';
+import {
+  getHasPlanAllBreakDurations,
+  getHasPlanAllRepsExerciseInput,
+  getHasPlanAllTimedExerciseInput,
+} from '@/utils/workout/plan';
 
 type GlobalTimerState = 'uninitialised' | 'running' | 'paused' | 'completed';
 
@@ -33,25 +38,36 @@ const timeFormatter = {
 };
 
 const composeExercisesFromPlan = (plan: WorkoutPlan): Exercise[] => {
-  const repsExerciseSets = new Array<RepsExercise['sets'][number]>(
-    plan.repetitionExercisesSetsCount
-  ).fill({
-    reps: plan.repetitionExercisesRepetitionsCount,
-  });
-  const repsExercises: Exercise[] = new Array<RepsExercise>(plan.repetitionExercisesCount).fill({
-    type: 'reps',
-    sets: [...repsExerciseSets],
-  });
+  if (!getHasPlanAllBreakDurations(plan)) {
+    throw Error('Missing breakes durations!');
+  }
 
-  const timedExerciseSets = new Array<TimedExercise['sets'][number]>(
-    plan.timedExercisesSetsCount
-  ).fill({
-    time: plan.timedExercisesDuration,
-  });
-  const timedExercises: Exercise[] = new Array<TimedExercise>(plan.timedExercisesCount).fill({
-    type: 'time',
-    sets: [...timedExerciseSets],
-  });
+  const hasPlanAllRepsExerciseInput = getHasPlanAllRepsExerciseInput(plan);
+  const hasPlanAllTimedExerciseInput = getHasPlanAllTimedExerciseInput(plan);
+
+  const repsExerciseSets = hasPlanAllRepsExerciseInput
+    ? new Array<RepsExercise['sets'][number]>(plan.repetitionExercisesSetsCount).fill({
+        reps: plan.repetitionExercisesRepetitionsCount,
+      })
+    : [];
+  const repsExercises: Exercise[] = hasPlanAllRepsExerciseInput
+    ? new Array<RepsExercise>(plan.repetitionExercisesCount).fill({
+        type: 'reps',
+        sets: [...repsExerciseSets],
+      })
+    : [];
+
+  const timedExerciseSets = hasPlanAllTimedExerciseInput
+    ? new Array<TimedExercise['sets'][number]>(plan.timedExercisesSetsCount).fill({
+        time: plan.timedExercisesDuration,
+      })
+    : [];
+  const timedExercises: Exercise[] = hasPlanAllTimedExerciseInput
+    ? new Array<TimedExercise>(plan.timedExercisesCount).fill({
+        type: 'time',
+        sets: [...timedExerciseSets],
+      })
+    : [];
 
   return repsExercises.concat(timedExercises);
 };
