@@ -241,9 +241,6 @@ export default function WorkoutScreen() {
   const showCountdown =
     currentProgressState.uid === 'SetBreak' || currentProgressState.uid === 'Break';
 
-  console.log('globalTimerState', globalTimerState);
-  console.log('currentProgressState.uid', currentProgressState.uid);
-
   return (
     <ParallaxScrollView
       height={100}
