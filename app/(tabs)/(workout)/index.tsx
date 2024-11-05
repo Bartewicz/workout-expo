@@ -21,13 +21,27 @@ export default function PlannerScreen() {
   const { actions, plan } = useWorkoutContext();
   const router = useRouter();
 
-  const disabled = Object.values(plan).some((value) => !value);
+  const hasAllRepsExerciseInput = [
+    plan.repetitionExercisesCount,
+    plan.repetitionExercisesSetsCount,
+    plan.repetitionExercisesRepetitionsCount,
+  ].every((value) => value);
+  const hasAllTimedExerciseInput = [
+    plan.timedExercisesCount,
+    plan.timedExercisesSetsCount,
+    plan.timedExercisesDuration,
+  ].every((value) => value);
+  const hasAllBreakDuratoins = [plan.exercisesBreakDuration, plan.setsBreakDuration].every(
+    (value) => value
+  );
+  const disabled = !((hasAllRepsExerciseInput || hasAllTimedExerciseInput) && hasAllBreakDuratoins);
 
   const onPressProceed = useCallback(() => {
     if (!disabled) {
       router.push('/workout');
     }
-  }, [disabled]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabled]); // disabled: router
 
   return (
     <ParallaxScrollView
@@ -64,9 +78,8 @@ export default function PlannerScreen() {
               onSubmitEditing={() => repSetsInputRef.current?.focus()}
               keyboardType="numeric"
               enterKeyHint="next"
-              // Todo: eventually remove default value
-              defaultValue="8"
               maxLength={2}
+              value={plan.repetitionExercisesCount.toString()}
               onChangeText={actions.setRepetitionExercisesCount}
               placeholder="1"
               placeholderTextColor={Colors.text.primaryDark}
@@ -88,9 +101,8 @@ export default function PlannerScreen() {
               onSubmitEditing={() => repRepsInputRef.current?.focus()}
               keyboardType="numeric"
               enterKeyHint="next"
-              // Todo: eventually remove default value
-              defaultValue="4"
               maxLength={2}
+              value={plan.repetitionExercisesSetsCount.toString()}
               onChangeText={actions.setRepetitionExerciseSetsCount}
               placeholder="1"
               placeholderTextColor={Colors.text.primaryDark}
@@ -112,11 +124,10 @@ export default function PlannerScreen() {
               onSubmitEditing={() => timedExercisesInputRef.current?.focus()}
               keyboardType="numeric"
               enterKeyHint="next"
-              // Todo: eventually remove default value
-              defaultValue="10"
               maxLength={2}
+              value={plan.repetitionExercisesRepetitionsCount.toString()}
               onChangeText={actions.setRepetitionExerciseRepetitionsCount}
-              placeholder="1"
+              placeholder="10"
               placeholderTextColor={Colors.text.primaryDark}
               selectionColor={Colors.common.tint}
               style={styles.numericInput}
@@ -149,11 +160,10 @@ export default function PlannerScreen() {
               onSubmitEditing={() => timedSetsInputRef.current?.focus()}
               keyboardType="numeric"
               enterKeyHint="next"
-              // Todo: eventually remove default value
-              defaultValue="1"
               maxLength={2}
+              value={plan.timedExercisesCount.toString()}
               onChangeText={actions.setTimedExercisesCount}
-              placeholder="10"
+              placeholder="1"
               placeholderTextColor={Colors.text.primaryDark}
               selectionColor={Colors.common.tint}
               style={styles.numericInput}
@@ -173,9 +183,8 @@ export default function PlannerScreen() {
               onSubmitEditing={() => timedDurationInputRef.current?.focus()}
               keyboardType="numeric"
               enterKeyHint="next"
-              // Todo: eventually remove default value
-              defaultValue="4"
               maxLength={2}
+              value={plan.timedExercisesSetsCount.toString()}
               onChangeText={actions.setTimedExerciseSetsCount}
               placeholder="1"
               placeholderTextColor={Colors.text.primaryDark}
@@ -205,25 +214,16 @@ export default function PlannerScreen() {
                 onSubmitEditing={() => exercisesBreakInputRef.current?.focus()}
                 keyboardType="numeric"
                 enterKeyHint="next"
-                // Todo: eventually remove default value
-                defaultValue="45"
                 maxLength={3}
+                value={plan.timedExercisesDuration.toString()}
                 onChangeText={actions.setTimedExerciseDuration}
-                placeholder="45"
+                placeholder="30"
                 placeholderTextColor={Colors.text.primaryDark}
                 selectionColor={Colors.common.tint}
                 style={styles.numericInput}
               />
-              <ThemedText
-                type="defaultSemiBold"
-                style={{
-                  position: 'absolute',
-                  fontSize: 32,
-                  lineHeight: 32,
-                  left: 65,
-                }}
-              >
-                sek.
+              <ThemedText type="defaultSemiBold" style={styles.secondsUnit}>
+                s
               </ThemedText>
             </View>
           </View>
@@ -262,25 +262,16 @@ export default function PlannerScreen() {
                 onSubmitEditing={() => setBreakInputRef.current?.focus()}
                 keyboardType="numeric"
                 enterKeyHint="next"
-                // Todo: eventually remove default value
-                defaultValue="90"
-                maxLength={2}
+                maxLength={3}
+                value={plan.exercisesBreakDuration.toString()}
                 onChangeText={actions.setExercisesBreakDuration}
-                placeholder="90"
+                placeholder="60"
                 placeholderTextColor={Colors.text.primaryDark}
                 selectionColor={Colors.common.tint}
                 style={styles.numericInput}
               />
-              <ThemedText
-                type="defaultSemiBold"
-                style={{
-                  position: 'absolute',
-                  fontSize: 32,
-                  lineHeight: 32,
-                  left: 65,
-                }}
-              >
-                sek.
+              <ThemedText type="defaultSemiBold" style={styles.secondsUnit}>
+                s
               </ThemedText>
             </View>
           </View>
@@ -306,25 +297,16 @@ export default function PlannerScreen() {
                 onSubmitEditing={onPressProceed}
                 keyboardType="numeric"
                 enterKeyHint="go"
-                // Todo: eventually remove default value
-                defaultValue="45"
+                maxLength={3}
+                value={plan.setsBreakDuration.toString()}
                 onChangeText={actions.setSetsBreakDuration}
-                maxLength={2}
-                placeholder="45"
+                placeholder="30"
                 placeholderTextColor={Colors.text.primaryDark}
                 selectionColor={Colors.common.tint}
                 style={styles.numericInput}
               />
-              <ThemedText
-                type="defaultSemiBold"
-                style={{
-                  position: 'absolute',
-                  fontSize: 32,
-                  lineHeight: 32,
-                  left: 65,
-                }}
-              >
-                sek.
+              <ThemedText type="defaultSemiBold" style={styles.secondsUnit}>
+                s
               </ThemedText>
             </View>
           </View>
@@ -334,7 +316,7 @@ export default function PlannerScreen() {
         <Pressable
           onPress={onPressProceed}
           disabled={disabled}
-          style={[{ width: '50%' }, disabled && { opacity: 0.75 }]}
+          style={[{ width: '100%', maxWidth: 320 }, disabled && { opacity: 0.75 }]}
         >
           <ThemedText type="defaultSemiBold" style={styles.forwardButton}>
             DALEJ
@@ -356,17 +338,23 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   numericInput: {
-    backgroundColor: Colors.common.primary,
+    backgroundColor: Colors.common.primaryLighter,
     paddingVertical: 7,
     borderRadius: 2,
-    width: 60,
+    width: 90,
     textAlign: 'center',
     fontSize: 32,
     fontWeight: '600',
   },
+  secondsUnit: {
+    position: 'absolute',
+    fontSize: 32,
+    lineHeight: 32,
+    right: -20,
+  },
   forwardButton: {
-    backgroundColor: Colors.common.primary,
-    color: Colors.common.primaryLighter,
+    backgroundColor: Colors.common.blue,
+    color: Colors.text.ultraDark,
     width: '100%',
     fontSize: 24,
     borderRadius: 2,

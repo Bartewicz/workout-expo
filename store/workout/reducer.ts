@@ -32,29 +32,48 @@ export type WorkoutPlan = {
 
 export const workoutPlanReducer: Reducer<WorkoutPlan, WorkoutPlanAction> = (plan, action) => {
   switch (action.type) {
-    case 'SET_REPETITION_EXERCISES_COUNT':
+    case 'SET_REPETITION_EXERCISES_COUNT': {
       return { ...plan, repetitionExercisesCount: action.payload };
-    case 'SET_REPETITION_EXERCISE_SETS_COUNT':
+    }
+    case 'SET_REPETITION_EXERCISE_SETS_COUNT': {
       return { ...plan, repetitionExercisesSetsCount: action.payload };
-    case 'SET_REPETITION_EXERCISE_REPETITIONS_COUNT':
+    }
+    case 'SET_REPETITION_EXERCISE_REPETITIONS_COUNT': {
       return { ...plan, repetitionExercisesRepetitionsCount: action.payload };
-    case 'SET_TIMED_EXERCISES_COUNT':
+    }
+    case 'SET_TIMED_EXERCISES_COUNT': {
       return { ...plan, timedExercisesCount: action.payload };
-    case 'SET_TIMED_EXERCISE_SETS_COUNT':
+    }
+    case 'SET_TIMED_EXERCISE_SETS_COUNT': {
       return { ...plan, timedExercisesSetsCount: action.payload };
-    case 'SET_TIMED_EXERCISE_DURATION':
+    }
+    case 'SET_TIMED_EXERCISE_DURATION': {
       return { ...plan, timedExercisesDuration: action.payload };
-    case 'SET_EXERCISES_BREAK_DURATION':
+    }
+    case 'SET_EXERCISES_BREAK_DURATION': {
       return { ...plan, exercisesBreakDuration: action.payload };
-    case 'SET_SETS_BREAK_DURATION':
+    }
+    case 'SET_SETS_BREAK_DURATION': {
       return { ...plan, setsBreakDuration: action.payload };
+    }
     default:
       throw new Error('Unknown action');
   }
 };
 
+const initialState: WorkoutPlan = {
+  repetitionExercisesCount: 8,
+  repetitionExercisesSetsCount: 4,
+  repetitionExercisesRepetitionsCount: 10,
+  timedExercisesCount: 1,
+  timedExercisesSetsCount: 4,
+  timedExercisesDuration: 45,
+  exercisesBreakDuration: 90,
+  setsBreakDuration: 45,
+};
+
 export const useWorkoutPlan = () => {
-  const [plan, dispatch] = useReducer(workoutPlanReducer, {} as WorkoutPlan);
+  const [plan, dispatch] = useReducer(workoutPlanReducer, initialState);
 
   const actions: WorkoutPlanActions = useMemo(
     () => ({
@@ -99,7 +118,7 @@ export const useWorkoutPlan = () => {
           payload: Number(textValue),
         }),
     }),
-    [dispatch],
+    [dispatch]
   );
 
   return { plan, actions };

@@ -14,10 +14,12 @@ export const Colors = {
     primary: '#5ad8e9',
     primaryDark: '#2f94a1',
     secondary: '#5a8ce9',
+    ultraDark: '#19191a',
     ultraLight: '#ecedee',
   },
   common: {
     black: '#000',
+    blue: '#55aaee',
     danger: '#e96b5a',
     gold: '#cfb023',
     greyDark: '#80888e',

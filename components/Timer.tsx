@@ -24,10 +24,10 @@ const TimeFormatter = (time: number, fontSize: number, textStyle: StyleProp<Text
     minutes > 9
       ? (2 / 3) * fontSize
       : minutes > 0
-        ? (2 / 5) * fontSize
-        : secondsNum < 10
-          ? (-1 / 6) * fontSize
-          : 0;
+      ? (2 / 5) * fontSize
+      : secondsNum < 10
+      ? (-1 / 4) * fontSize
+      : 0;
   const containerPosition: StyleProp<ViewStyle> = {
     transform: [{ translateX }],
   };
@@ -67,7 +67,7 @@ export const Timer = ({ state, containerStyle, textStyle, fontSize }: TimerProps
     (_relativeStartTime: number) => () => {
       setTime(Math.floor((Date.now() - _relativeStartTime) / 10));
     },
-    [],
+    []
   );
 
   useEffect(() => {

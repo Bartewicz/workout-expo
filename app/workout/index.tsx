@@ -34,7 +34,7 @@ const timeFormatter = {
 
 const composeExercisesFromPlan = (plan: WorkoutPlan): Exercise[] => {
   const repsExerciseSets = new Array<RepsExercise['sets'][number]>(
-    plan.repetitionExercisesSetsCount,
+    plan.repetitionExercisesSetsCount
   ).fill({
     reps: plan.repetitionExercisesRepetitionsCount,
   });
@@ -44,7 +44,7 @@ const composeExercisesFromPlan = (plan: WorkoutPlan): Exercise[] => {
   });
 
   const timedExerciseSets = new Array<TimedExercise['sets'][number]>(
-    plan.timedExercisesSetsCount,
+    plan.timedExercisesSetsCount
   ).fill({
     time: plan.timedExercisesDuration,
   });
@@ -238,8 +238,8 @@ export default function WorkoutScreen() {
             {globalTimerState === 'uninitialised'
               ? 'Rozpocznij trening! 🚀'
               : globalTimerState === 'completed'
-                ? 'Udało się! 🔥'
-                : 'Budowanie mięśni w trakcie... 💪'}
+              ? 'Udało się! 🔥'
+              : 'Budowanie mięśni w trakcie... 💪'}
           </ThemedText>
         </View>
       }
@@ -345,7 +345,7 @@ export default function WorkoutScreen() {
             Czas trwania:{' '}
             {timeFormatter.seconds.format(
               currentProgressState.currentExercise.sets[currentProgressState.currentSetIndex || 0]
-                .time,
+                .time
             )}{' '}
             s
           </ThemedText>
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   globalTimerText: {
-    color: Colors.text.secondary,
+    color: Colors.common.blue,
     fontSize: 24,
     lineHeight: 24,
     fontWeight: 600,
