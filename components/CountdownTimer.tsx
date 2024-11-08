@@ -17,7 +17,7 @@ const TimeFormatter = (time: number, textStyle?: StyleProp<TextStyle>) => {
   const seconds = time % 60;
 
   const textColorStyle =
-    time < 0 ? styles.negative : seconds <= 5 ? styles.closeToZero : styles.default;
+    time < 0 ? styles.negative : time <= 5 ? styles.closeToZero : styles.default;
 
   return (
     <ThemedText style={[textStyle, textColorStyle]}>
@@ -35,7 +35,7 @@ export const CountdownTimer = ({ from, state, containerStyle, textStyle }: Count
       const timeLeft = Math.ceil((_relativeEndTime - Date.now()) / 1000);
       setRemainingTime(timeLeft);
     },
-    [],
+    []
   );
 
   useEffect(() => {
@@ -50,6 +50,10 @@ export const CountdownTimer = ({ from, state, containerStyle, textStyle }: Count
       }
 
       timerIntervalRef = setInterval(reduceTimer(_relativeEndTime), 1000);
+
+      return () => {
+        clearInterval(timerIntervalRef);
+      };
     }
 
     if (state === 'paused') {
@@ -57,12 +61,12 @@ export const CountdownTimer = ({ from, state, containerStyle, textStyle }: Count
     }
 
     if (state === 'uninitialised') {
-      setRemainingTime(from);
       timeLeftRef.current = from;
+      setRemainingTime(from);
     }
 
     return () => {
-      clearInterval(timerIntervalRef);
+      if (timerIntervalRef) clearInterval(timerIntervalRef);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);

@@ -12,21 +12,20 @@ type TimerProps = {
 };
 
 const TimeFormatter = (time: number, fontSize: number, textStyle: StyleProp<TextStyle>) => {
-  const timeStr = (time / 100).toString();
+  const timeStr = (time / 10).toString();
 
-  const [secondsRaw, centiSecondsRaw = '00'] = timeStr.split('.');
-  const centiSeconds = centiSecondsRaw.length === 1 ? centiSecondsRaw + '0' : centiSecondsRaw;
+  const [secondsRaw, centiSeconds = '0'] = timeStr.split('.');
   const secondsNum = Number(secondsRaw);
   const minutes = Math.floor(secondsNum / 60);
   const seconds = minutes > 0 ? (secondsNum % 60).toString().padStart(2, '0') : secondsNum % 60;
 
   const translateX =
     minutes > 9
-      ? (2 / 3) * fontSize
+      ? (3 / 4) * fontSize
       : minutes > 0
-      ? (2 / 5) * fontSize
-      : secondsNum < 10
-      ? (-1 / 4) * fontSize
+      ? (1 / 2) * fontSize
+      : secondsNum > 9
+      ? (1 / 6) * fontSize
       : 0;
   const containerPosition: StyleProp<ViewStyle> = {
     transform: [{ translateX }],
@@ -65,7 +64,7 @@ export const Timer = ({ state, containerStyle, textStyle, fontSize }: TimerProps
 
   const advanceTimer = useCallback(
     (_relativeStartTime: number) => () => {
-      setTime(Math.floor((Date.now() - _relativeStartTime) / 10));
+      setTime(Math.floor((Date.now() - _relativeStartTime) / 100));
     },
     []
   );
@@ -76,10 +75,10 @@ export const Timer = ({ state, containerStyle, textStyle, fontSize }: TimerProps
       let _relativeStartTime = Date.now();
 
       if (!!timePassedRef.current) {
-        _relativeStartTime = Date.now() - timePassedRef.current * 10;
+        _relativeStartTime = Date.now() - timePassedRef.current * 100;
       }
 
-      timerIntervalRef = setInterval(advanceTimer(_relativeStartTime), 10);
+      timerIntervalRef = setInterval(advanceTimer(_relativeStartTime), 100);
 
       return () => {
         clearInterval(timerIntervalRef);
@@ -91,9 +90,13 @@ export const Timer = ({ state, containerStyle, textStyle, fontSize }: TimerProps
     }
 
     if (state === 'uninitialised') {
-      setTime(0);
       timePassedRef.current = 0;
+      setTime(0);
     }
+
+    return () => {
+      if (timerIntervalRef) clearInterval(timerIntervalRef);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
