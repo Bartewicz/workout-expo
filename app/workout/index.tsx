@@ -17,25 +17,9 @@ import {
   getHasPlanAllRepsExerciseInput,
   getHasPlanAllTimedExerciseInput,
 } from '@/utils/workout/plan';
+import { formatTime } from '@/utils/time/formatTime';
 
 type GlobalTimerState = 'uninitialised' | 'running' | 'paused' | 'completed';
-
-const timeFormatter = {
-  seconds: {
-    format: (time: number) => {
-      const centisecondsStr = Math.floor(time / 10)
-        .toString()
-        .padStart(4, '0');
-      const [dozenSeconds, seconds, deciSecond, centiSecond] = centisecondsStr;
-      const formattedSeconds = seconds + '.' + deciSecond + centiSecond;
-
-      if (dozenSeconds === '0') {
-        return formattedSeconds;
-      }
-      return dozenSeconds + formattedSeconds;
-    },
-  },
-};
 
 const composeExercisesFromPlan = (plan: WorkoutPlan): Exercise[] => {
   if (!getHasPlanAllBreakDurations(plan)) {
@@ -258,12 +242,14 @@ export default function WorkoutScreen() {
       }
     >
       <View style={styles.contentContainer}>
-        <Timer
-          state={globalTimerState}
-          containerStyle={styles.globalTimerContainer}
-          textStyle={styles.globalTimerText}
-          fontSize={24}
-        />
+        <View id="globalTimerContainer" style={styles.globalTimerContainer}>
+          <Timer
+            state={globalTimerState}
+            // containerStyle={styles.globalTimerContainer}
+            textStyle={styles.globalTimerText}
+            fontSize={24}
+          />
+        </View>
         <View style={styles.mainContentContainer}>
           <Pressable
             disabled={isGloballyUninitialised}
@@ -274,25 +260,21 @@ export default function WorkoutScreen() {
           >
             <Ionicons name="refresh" color={Colors.common.primary} size={50} />
           </Pressable>
-          {showCountdown ? (
-            <CountdownTimer
-              from={
-                currentProgressState.uid === 'Break'
-                  ? plan.exercisesBreakDuration
-                  : plan.setsBreakDuration
-              }
-              state={globalTimerState}
-              containerStyle={styles.workoutTimerContainer}
-              textStyle={styles.workoutTimer}
-            />
-          ) : (
-            <Timer
-              state={globalTimerState}
-              containerStyle={styles.workoutTimerContainer}
-              textStyle={styles.workoutTimer}
-              fontSize={30}
-            />
-          )}
+          <View id="workoutTimerContainer" style={styles.workoutTimerContainer}>
+            {showCountdown ? (
+              <CountdownTimer
+                from={
+                  currentProgressState.uid === 'Break'
+                    ? plan.exercisesBreakDuration
+                    : plan.setsBreakDuration
+                }
+                state={globalTimerState}
+                textStyle={styles.workoutTimer}
+              />
+            ) : (
+              <Timer state={globalTimerState} textStyle={styles.workoutTimer} fontSize={30} />
+            )}
+          </View>
           <Pressable
             disabled={isGloballyUninitialised || isCompleted}
             onPress={onTogglePaused}
@@ -356,7 +338,7 @@ export default function WorkoutScreen() {
         ) : currentProgressState.currentExercise?.type === 'time' ? (
           <ThemedText>
             Czas trwania:{' '}
-            {timeFormatter.seconds.format(
+            {formatTime(
               currentProgressState.currentExercise.sets[currentProgressState.currentSetIndex || 0]
                 .time
             )}{' '}
@@ -385,10 +367,8 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   globalTimerContainer: {
-    marginBottom: 32,
-    transform: [{ translateX: -5 }],
-    width: '100%',
-    alignItems: 'center',
+    marginBottom: 30,
+    height: 20,
   },
   globalTimerText: {
     color: Colors.common.blue,
@@ -397,7 +377,6 @@ const styles = StyleSheet.create({
     fontWeight: 600,
   },
   workoutTimerContainer: {
-    alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 8,
     borderRadius: 90,
@@ -406,7 +385,6 @@ const styles = StyleSheet.create({
     flexWrap: 'nowrap',
     width: 180,
     height: 180,
-    zIndex: 100,
   },
   workoutTimer: {
     color: Colors.common.primary,

@@ -1,64 +1,54 @@
 import type { Centiseconds } from '@/utils/types/time';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
+import type { StyleProp, TextStyle } from 'react-native';
 import { StyleSheet, View } from 'react-native';
 import { ThemedText } from './ThemedText';
+import { formatTime } from '@/utils/time/formatTime';
+import { TEN_MINUTES, ONE_MINUTE, TEN_SECONDS, TEN_HOURS, ONE_HOUR } from '@/constants/Time';
 
 type TimerProps = {
   state: 'uninitialised' | 'running' | 'paused' | 'completed';
   fontSize: number;
-  containerStyle?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
 };
 
-const TimeFormatter = (time: number, fontSize: number, textStyle: StyleProp<TextStyle>) => {
-  const timeStr = (time / 10).toString();
+const TimeFormatter = ({
+  time,
+  fontSize,
+  textStyle,
+}: {
+  time: number;
+  fontSize: number;
+  textStyle: StyleProp<TextStyle>;
+}) => {
+  const absoluteTime = Math.abs(time);
+  const [formattedTime, decimalSeconds = '0'] = formatTime(time).split('.');
 
-  const [secondsRaw, centiSeconds = '0'] = timeStr.split('.');
-  const secondsNum = Number(secondsRaw);
-  const minutes = Math.floor(secondsNum / 60);
-  const seconds = minutes > 0 ? (secondsNum % 60).toString().padStart(2, '0') : secondsNum % 60;
-
-  const translateX =
-    minutes > 9
+  const rightOffset: number =
+    absoluteTime >= TEN_HOURS
+      ? (7 / 4) * fontSize
+      : absoluteTime >= ONE_HOUR
+      ? (3 / 2) * fontSize
+      : absoluteTime >= TEN_MINUTES
+      ? fontSize
+      : absoluteTime >= ONE_MINUTE
       ? (3 / 4) * fontSize
-      : minutes > 0
-      ? (1 / 2) * fontSize
-      : secondsNum > 9
-      ? (1 / 6) * fontSize
+      : absoluteTime >= TEN_SECONDS
+      ? (1 / 3) * fontSize
       : 0;
-  const containerPosition: StyleProp<ViewStyle> = {
-    transform: [{ translateX }],
-  };
-
-  if (minutes > 0) {
-    return (
-      <View style={[{ position: 'relative', flexDirection: 'row' }, containerPosition]}>
-        <ThemedText style={[textStyle, styles.absolute, { right: (4 / 15) * fontSize }]}>
-          {minutes}:{seconds}
-        </ThemedText>
-        <ThemedText style={textStyle}>.</ThemedText>
-        <ThemedText style={[textStyle, styles.absolute, { left: (4 / 15) * fontSize }]}>
-          {centiSeconds}
-        </ThemedText>
-      </View>
-    );
-  }
 
   return (
-    <View style={[{ position: 'relative' }, containerPosition]}>
-      <ThemedText style={[textStyle, styles.absolute, { right: (4 / 15) * 30 }]}>
-        {seconds}
-      </ThemedText>
-      <ThemedText style={textStyle}>.</ThemedText>
-      <ThemedText style={[textStyle, styles.absolute, { left: (4 / 15) * 30 }]}>
-        {centiSeconds}
-      </ThemedText>
+    <View id="top" style={styles.relativeRow}>
+      <View style={{ transform: [{ translateX: rightOffset }] }}>
+        <ThemedText style={textStyle}>.</ThemedText>
+        <ThemedText style={[textStyle, styles.absolute, { right: 7 }]}>{formattedTime}</ThemedText>
+        <ThemedText style={[textStyle, styles.absolute, { left: 6 }]}>{decimalSeconds}</ThemedText>
+      </View>
     </View>
   );
 };
 
-export const Timer = ({ state, containerStyle, textStyle, fontSize }: TimerProps) => {
+export const Timer = ({ state, textStyle, fontSize }: TimerProps) => {
   const timePassedRef = useRef<Centiseconds | null>(null);
   const [time, setTime] = useState<Centiseconds>(0);
 
@@ -100,10 +90,15 @@ export const Timer = ({ state, containerStyle, textStyle, fontSize }: TimerProps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
-  return <View style={containerStyle}>{TimeFormatter(time, fontSize, textStyle)}</View>;
+  return <TimeFormatter time={time} fontSize={fontSize} textStyle={textStyle} />;
 };
 
 const styles = StyleSheet.create({
+  relativeRow: {
+    position: 'relative',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
   absolute: {
     position: 'absolute',
   },
