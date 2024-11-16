@@ -22,7 +22,7 @@ const TimeFormatter = ({
   textStyle: StyleProp<TextStyle>;
 }) => {
   const absoluteTime = Math.abs(time);
-  const [formattedTime, decimalSeconds = '0'] = formatTime(time).split('.');
+  const [formattedTime] = formatTime(time);
 
   const rightOffset: number =
     absoluteTime >= TEN_HOURS
@@ -40,9 +40,9 @@ const TimeFormatter = ({
   return (
     <View id="top" style={styles.relativeRow}>
       <View style={{ transform: [{ translateX: rightOffset }] }}>
-        <ThemedText style={textStyle}>.</ThemedText>
+        <ThemedText style={textStyle}> </ThemedText>
         <ThemedText style={[textStyle, styles.absolute, { right: 7 }]}>{formattedTime}</ThemedText>
-        <ThemedText style={[textStyle, styles.absolute, { left: 6 }]}>{decimalSeconds}</ThemedText>
+        {/* <ThemedText style={[textStyle, styles.absolute, { left: 6 }]}>{decimalSeconds}</ThemedText> */}
       </View>
     </View>
   );
@@ -54,7 +54,8 @@ export const Timer = ({ state, textStyle, fontSize }: TimerProps) => {
 
   const advanceTimer = useCallback(
     (_relativeStartTime: number) => () => {
-      setTime(Math.floor((Date.now() - _relativeStartTime) / 100));
+      // Todo bring back centiseconds
+      setTime(Math.floor((Date.now() - _relativeStartTime) / 1000));
     },
     []
   );
@@ -65,10 +66,10 @@ export const Timer = ({ state, textStyle, fontSize }: TimerProps) => {
       let _relativeStartTime = Date.now();
 
       if (!!timePassedRef.current) {
-        _relativeStartTime = Date.now() - timePassedRef.current * 100;
+        _relativeStartTime = Date.now() - timePassedRef.current * 1000;
       }
 
-      timerIntervalRef = setInterval(advanceTimer(_relativeStartTime), 100);
+      timerIntervalRef = setInterval(advanceTimer(_relativeStartTime), 1000);
 
       return () => {
         clearInterval(timerIntervalRef);

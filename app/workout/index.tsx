@@ -6,78 +6,23 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import type { Miliseconds, TimeRange } from '@/utils/types/time';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
-import { WorkoutPlan } from '@/store/workout/reducer';
-import { Exercise, RepsExercise, TimedExercise } from '@/utils/types/exercise';
-import { PeriodType } from '@/constants/PeriodType';
-import { InitialWorkoutProgressState, WorkoutProgressState } from '@/utils/types/workoutProgress';
 import { Timer } from '@/components/Timer';
 import { CountdownTimer } from '@/components/CountdownTimer';
-import {
-  getHasPlanAllBreakDurations,
-  getHasPlanAllRepsExerciseInput,
-  getHasPlanAllTimedExerciseInput,
-} from '@/utils/workout/plan';
 import { formatTime } from '@/utils/time/formatTime';
+import { composeScheduleFromPlan } from '@/utils/workout/composeScheduleFromPlan';
 
 type GlobalTimerState = 'uninitialised' | 'running' | 'paused' | 'completed';
 
-const composeExercisesFromPlan = (plan: WorkoutPlan): Exercise[] => {
-  if (!getHasPlanAllBreakDurations(plan)) {
-    throw Error('Missing breakes durations!');
-  }
-
-  const hasPlanAllRepsExerciseInput = getHasPlanAllRepsExerciseInput(plan);
-  const hasPlanAllTimedExerciseInput = getHasPlanAllTimedExerciseInput(plan);
-
-  const repsExerciseSets = hasPlanAllRepsExerciseInput
-    ? new Array<RepsExercise['sets'][number]>(plan.repetitionExercisesSetsCount).fill({
-        reps: plan.repetitionExercisesRepetitionsCount,
-      })
-    : [];
-  const repsExercises: Exercise[] = hasPlanAllRepsExerciseInput
-    ? new Array<RepsExercise>(plan.repetitionExercisesCount).fill({
-        type: 'reps',
-        sets: [...repsExerciseSets],
-      })
-    : [];
-
-  const timedExerciseSets = hasPlanAllTimedExerciseInput
-    ? new Array<TimedExercise['sets'][number]>(plan.timedExercisesSetsCount).fill({
-        time: plan.timedExercisesDuration,
-      })
-    : [];
-  const timedExercises: Exercise[] = hasPlanAllTimedExerciseInput
-    ? new Array<TimedExercise>(plan.timedExercisesCount).fill({
-        type: 'time',
-        sets: [...timedExerciseSets],
-      })
-    : [];
-
-  return repsExercises.concat(timedExercises);
-};
-
 export default function WorkoutScreen() {
   const { plan } = useWorkoutContext();
-  const exercises = composeExercisesFromPlan(plan);
+  const schedule = composeScheduleFromPlan(plan);
 
   const [startTime, setStartTime] = useState<Miliseconds>();
   const [endTime, setEndTime] = useState<Miliseconds>();
   const [timestamps, setTimestamps] = useState<TimeRange[]>([]);
   const [globalTimerState, setGlobalTimerState] = useState<GlobalTimerState>('uninitialised');
 
-  const initialState: InitialWorkoutProgressState = {
-    uid: 'Initial',
-    currentPeriodType: PeriodType.Break,
-    nextExercise: exercises[0],
-    nextExerciseIndex: 0,
-    nextExerciseMaxSets: exercises[0].sets.length,
-    nextSetIndex: 0,
-  };
-
-  const [currentProgressState, setNextProgressState] = useState<WorkoutProgressState>(initialState);
-
-  // Todo: maybe I can use that for determining timestamps?
-  const { currentExerciseIndex } = currentProgressState;
+  const [schedulePhaseIdx, setNextSchedulePhaseIdx] = useState(0);
 
   const onTogglePaused = () => {
     switch (globalTimerState) {
@@ -95,135 +40,26 @@ export default function WorkoutScreen() {
 
   const onClickReset = () => {
     setGlobalTimerState('uninitialised');
-    setNextProgressState(initialState);
+    setNextSchedulePhaseIdx(0);
   };
 
   const onPressWorkoutToggle = () => {
-    if (currentProgressState.uid === 'Initial') {
-      const {
-        nextExercise: firstExercise,
-        nextExerciseIndex: firstExerciseIndex,
-        nextExerciseMaxSets: firstExerciceMaxSets,
-        nextSetIndex: firstSetIndex,
-      } = currentProgressState;
-      const hasNextSet = 1 < firstExerciceMaxSets;
-      const hasNextExercise = exercises.at(1) !== undefined;
-
-      setNextProgressState({
-        uid: 'ExerciseWorkout',
-        currentPeriodType: PeriodType.Exercise,
-        currentExercise: firstExercise,
-        currentExerciseIndex: firstExerciseIndex,
-        currentExerciseMaxSets: firstExerciceMaxSets,
-        currentSetIndex: firstSetIndex,
-        nextExerciseIndex: hasNextExercise ? 1 : undefined,
-        nextSetIndex: hasNextSet ? 1 : undefined,
-      });
-      setStartTime(Date.now());
-      setGlobalTimerState('running');
-      return;
-    }
-    if (currentProgressState.uid === 'ExerciseWorkout') {
-      if (!!currentProgressState.nextSetIndex) {
-        // set break between sets
-        const { currentExerciseIndex, currentExerciseMaxSets, currentExercise, nextSetIndex } =
-          currentProgressState;
-
-        setNextProgressState({
-          uid: 'SetBreak',
-          currentPeriodType: PeriodType.SetBreak,
-          currentExercise,
-          currentExerciseIndex,
-          currentExerciseMaxSets,
-          nextSetIndex,
-        });
-        setStartTime(0);
-        return;
-      }
-
-      // last set -> set break between exercises
-      const { currentExerciseIndex } = currentProgressState;
-      const nextExerciseIndex = currentExerciseIndex + 1;
-      const nextExercise = exercises[currentExerciseIndex + 1];
-
-      setNextProgressState({
-        uid: 'Break',
-        currentPeriodType: PeriodType.Break,
-        nextExerciseIndex: nextExerciseIndex,
-        nextExerciseMaxSets: nextExercise.sets.length,
-        nextExercise: nextExercise,
-        nextSetIndex: 0,
-      });
-      return;
-    }
-    if (currentProgressState.uid === 'SetBreak') {
-      // set next exercise set
-      const { currentExercise, currentExerciseIndex, currentExerciseMaxSets, nextSetIndex } =
-        currentProgressState;
-      const hasNextSet = nextSetIndex + 1 < currentExerciseMaxSets;
-      const isCurrentExerciseLast = currentExerciseIndex === exercises.length - 1;
-      const isNextSetLast = nextSetIndex + 1 === currentExerciseMaxSets;
-
-      if (isCurrentExerciseLast && isNextSetLast) {
-        setNextProgressState({
-          uid: 'LastExerciseLastSet',
-          currentPeriodType: PeriodType.Exercise,
-          currentExercise,
-          currentExerciseIndex,
-          currentExerciseMaxSets,
-          currentSetIndex: nextSetIndex,
-        });
-        return;
-      }
-
-      setNextProgressState({
-        uid: 'ExerciseWorkout',
-        currentPeriodType: PeriodType.Exercise,
-        currentExercise,
-        currentExerciseIndex,
-        currentExerciseMaxSets,
-        currentSetIndex: nextSetIndex,
-        nextSetIndex: hasNextSet ? nextSetIndex + 1 : undefined,
-      });
-      return;
-    }
-    if (currentProgressState.uid === 'Break') {
-      const { nextExercise, nextExerciseIndex, nextExerciseMaxSets } = currentProgressState;
-      const hasNextSet = 1 < nextExerciseMaxSets;
-
-      // Set next exercise
-
-      setNextProgressState({
-        uid: 'ExerciseWorkout',
-        currentPeriodType: PeriodType.Exercise,
-        currentExercise: nextExercise,
-        currentExerciseIndex: nextExerciseIndex,
-        currentExerciseMaxSets: nextExerciseMaxSets,
-        currentSetIndex: 0,
-        nextSetIndex: hasNextSet ? 1 : undefined,
-      });
-      return;
-    }
-    if (currentProgressState.uid === 'LastExerciseLastSet') {
-      setGlobalTimerState('completed');
-      setEndTime(Date.now());
-      setNextProgressState({
-        uid: 'Completed',
-        currentPeriodType: PeriodType.Break,
-      });
-      return;
-    }
-    if (currentProgressState.uid === 'Completed') {
-      return void 0;
-    }
+    if (schedulePhaseIdx === schedule.length - 1) return;
+    if (schedulePhaseIdx === 0) setGlobalTimerState('running');
+    setNextSchedulePhaseIdx((prev) => prev + 1);
+    // Todo add proceed to workout summary
   };
+  const currentPhase = schedule[schedulePhaseIdx];
 
   const isGloballyUninitialised = globalTimerState === 'uninitialised';
   const isGloballyPaused = globalTimerState === 'paused';
-  const isExerciseTimeNow = currentProgressState.currentPeriodType === 'exercise';
-  const isCompleted = currentProgressState.uid === 'Completed';
-  const showCountdown =
-    currentProgressState.uid === 'SetBreak' || currentProgressState.uid === 'Break';
+  const isExercisePhaseNow = currentPhase.phase === 'exercise';
+  const isCompleted = currentPhase.phase === 'completed';
+  const showCountdown = ['break', 'setBreak'].includes(currentPhase.phase);
+
+  console.log('isGloballyUninitialised', isGloballyUninitialised);
+  console.log('isGloballyPaused', isGloballyPaused);
+  console.log('isCompleted', isCompleted);
 
   return (
     <ParallaxScrollView
@@ -243,12 +79,7 @@ export default function WorkoutScreen() {
     >
       <View style={styles.contentContainer}>
         <View id="globalTimerContainer" style={styles.globalTimerContainer}>
-          <Timer
-            state={globalTimerState}
-            // containerStyle={styles.globalTimerContainer}
-            textStyle={styles.globalTimerText}
-            fontSize={24}
-          />
+          <Timer state={globalTimerState} textStyle={styles.globalTimerText} fontSize={24} />
         </View>
         <View style={styles.mainContentContainer}>
           <Pressable
@@ -264,7 +95,7 @@ export default function WorkoutScreen() {
             {showCountdown ? (
               <CountdownTimer
                 from={
-                  currentProgressState.uid === 'Break'
+                  currentPhase.phase === 'break'
                     ? plan.exercisesBreakDuration
                     : plan.setsBreakDuration
                 }
@@ -298,14 +129,14 @@ export default function WorkoutScreen() {
           disabled={isGloballyPaused}
           style={getMainActionBtnStyles({
             isCompleted,
-            isExerciseTimeNow,
+            isExercisePhaseNow,
             isGloballyPaused,
           })}
         >
           <Ionicons
             name={getMainActionBtnIconName({
               isCompleted,
-              isExerciseTimeNow,
+              isExercisePhaseNow,
               isGloballyUninitialised,
             })}
             color={isCompleted ? Colors.common.gold : Colors.common.primary}
@@ -315,38 +146,15 @@ export default function WorkoutScreen() {
         {/* </Animated.View> */}
       </View>
       <View style={{ alignItems: 'center' }}>
-        <ThemedText>Faza: {currentProgressState.uid}</ThemedText>
-        <ThemedText>
-          Nr ćwiczenia:{' '}
-          {typeof currentProgressState.currentExerciseIndex === 'number' &&
-            currentProgressState.currentExerciseIndex + 1}
-        </ThemedText>
-        <ThemedText>Typ: {currentProgressState.currentExercise?.type}</ThemedText>
-        <ThemedText>
-          Set:{' '}
-          {typeof currentProgressState.currentSetIndex === 'number' &&
-            currentProgressState.currentSetIndex + 1}
-        </ThemedText>
-        {currentProgressState.currentExercise?.type === 'reps' ? (
-          <ThemedText>
-            Ilość powtórzeń:{' '}
-            {
-              currentProgressState.currentExercise?.sets[currentProgressState.currentSetIndex || 0]
-                .reps
-            }
-          </ThemedText>
-        ) : currentProgressState.currentExercise?.type === 'time' ? (
-          <ThemedText>
-            Czas trwania:{' '}
-            {formatTime(
-              currentProgressState.currentExercise.sets[currentProgressState.currentSetIndex || 0]
-                .time
-            )}{' '}
-            s
-          </ThemedText>
-        ) : (
-          <ThemedText> </ThemedText>
-        )}
+        <ThemedText>Faza: {currentPhase.phase}</ThemedText>
+        <ThemedText>Nr ćwiczenia: {isExercisePhaseNow && currentPhase.exerciseIdx + 1}</ThemedText>
+        <ThemedText>Typ: {'type' in currentPhase && currentPhase.type}</ThemedText>
+        <ThemedText>Set: {isExercisePhaseNow && currentPhase.setIdx + 1}</ThemedText>
+        {isExercisePhaseNow && currentPhase.type === 'reps' ? (
+          <ThemedText>Ilość powtórzeń: {currentPhase.repetitions}</ThemedText>
+        ) : isExercisePhaseNow && currentPhase.type === 'timed' ? (
+          <ThemedText>Czas trwania: {formatTime(currentPhase.duration)} s</ThemedText>
+        ) : null}
       </View>
     </ParallaxScrollView>
   );
@@ -422,17 +230,17 @@ const styles = StyleSheet.create({
 
 function getMainActionBtnIconName({
   isCompleted,
-  isExerciseTimeNow,
+  isExercisePhaseNow,
   isGloballyUninitialised,
 }: {
   isCompleted: boolean;
-  isExerciseTimeNow: boolean;
+  isExercisePhaseNow: boolean;
   isGloballyUninitialised: boolean;
 }) {
   switch (true) {
     case isGloballyUninitialised:
       return 'rocket';
-    case isExerciseTimeNow:
+    case isExercisePhaseNow:
       return 'barbell-outline';
     case isCompleted:
       return 'trophy';
@@ -479,17 +287,17 @@ function getActionBtnTogglePauseStyles({
 
 function getMainActionBtnStyles({
   isCompleted,
-  isExerciseTimeNow,
+  isExercisePhaseNow,
   isGloballyPaused,
 }: {
   isCompleted: boolean;
-  isExerciseTimeNow: boolean;
+  isExercisePhaseNow: boolean;
   isGloballyPaused: boolean;
 }) {
   return [
     styles.actionBtn,
     styles.actionBtnWorkoutMain,
-    isExerciseTimeNow && {
+    isExercisePhaseNow && {
       transform: [{ rotate: '-45deg' }],
     },
     isGloballyPaused &&
