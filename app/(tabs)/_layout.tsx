@@ -12,17 +12,13 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors.common.primaryLighter,
         tabBarInactiveTintColor: Colors.text.ultraLight,
         tabBarActiveBackgroundColor: Colors.background.primary,
-        tabBarItemStyle: {
-          padding: 8,
-          gap: 5,
-        },
         tabBarStyle: {
           backgroundColor: Colors.background.primaryDark,
           borderTopColor: Colors.common.tint,
-          height: 60,
+          height: 50,
         },
       }}
-      initialRouteName="(workout)/index"
+      initialRouteName="(workout)"
     >
       <Tabs.Screen
         name="stats"
