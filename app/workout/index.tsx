@@ -90,11 +90,7 @@ export default function WorkoutScreen() {
             <Ionicons name="refresh" color={Colors.common.primary} size={50} />
           </Pressable>
           <View id="workoutTimerContainer" style={styles.workoutTimerContainer}>
-            <MainTimer
-              currentPhase={currentPhase}
-              nextPhase={schedule[schedulePhaseIdx + 1]}
-              state={globalTimerState}
-            />
+            <MainTimer currentPhase={currentPhase} nextPhase={nextPhase} state={globalTimerState} />
           </View>
           <Pressable
             disabled={isGloballyUninitialised || isCompleted}
