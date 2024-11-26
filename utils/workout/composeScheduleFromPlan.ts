@@ -5,6 +5,11 @@ import {
   getHasPlanAllTimedExerciseInput,
 } from './plan';
 
+type PhaseTiming = {
+  startTime?: number;
+  endTime?: number;
+};
+
 type BaseExercisePhase = {
   phase: 'exercise';
   exerciseIdx: number;
@@ -23,12 +28,8 @@ type BreakPhase = {
   phase: 'break' | 'setBreak';
   duration: number;
 };
-export type Phase =
-  | { phase: 'initial' }
-  | { phase: 'final' }
-  | { phase: 'completed' }
-  | ExercisePhase
-  | BreakPhase;
+export type Phase = PhaseTiming &
+  ({ phase: 'initial' } | { phase: 'final' } | { phase: 'completed' } | ExercisePhase | BreakPhase);
 
 export const composeScheduleFromPlan = (plan: WorkoutPlan): Phase[] => {
   if (!getHasPlanAllBreakDurations(plan)) {

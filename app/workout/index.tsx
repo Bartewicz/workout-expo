@@ -1,7 +1,7 @@
 import { ThemedText } from '@/components/ThemedText';
 import ParallaxScrollView from '@/components/view/ParallaxScrollView';
 import { useWorkoutContext } from '@/store/workout/context';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import type { Miliseconds, TimeRange } from '@/utils/types/time';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,6 +23,18 @@ export default function WorkoutScreen() {
   const [globalTimerState, setGlobalTimerState] = useState<GlobalTimerState>('uninitialised');
 
   const [schedulePhaseIdx, setNextSchedulePhaseIdx] = useState(0);
+
+  useEffect(() => {
+    const currentPhase = schedule[schedulePhaseIdx];
+    // ToDo - startTime from absolute 0
+    // currentPhase.startTime = Date.now();
+
+    return () => {
+      // Todo - the same for end time
+      // currentPhase.endTime = Date.now()
+      // Todo - not even mentioning including the break time
+    };
+  }, [schedulePhaseIdx]);
 
   const onTogglePaused = () => {
     switch (globalTimerState) {
