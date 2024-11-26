@@ -6,10 +6,10 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import type { Miliseconds, TimeRange } from '@/utils/types/time';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
-import { Timer } from '@/components/Timer';
-import { CountdownTimer } from '@/components/CountdownTimer';
+import { GlobalTimer } from '@/components/GlobalTimer';
 import { formatTime } from '@/utils/time/formatTime';
 import { composeScheduleFromPlan } from '@/utils/workout/composeScheduleFromPlan';
+import { MainTimer } from '@/components/MainTimer';
 
 type GlobalTimerState = 'uninitialised' | 'running' | 'paused' | 'completed';
 
@@ -49,17 +49,15 @@ export default function WorkoutScreen() {
     setNextSchedulePhaseIdx((prev) => prev + 1);
     // Todo add proceed to workout summary
   };
+
   const currentPhase = schedule[schedulePhaseIdx];
+  const nextPhase =
+    schedulePhaseIdx !== schedule.length - 1 ? schedule[schedulePhaseIdx + 1] : undefined;
 
   const isGloballyUninitialised = globalTimerState === 'uninitialised';
   const isGloballyPaused = globalTimerState === 'paused';
   const isExercisePhaseNow = currentPhase.phase === 'exercise';
   const isCompleted = currentPhase.phase === 'completed';
-  const showCountdown = ['break', 'setBreak'].includes(currentPhase.phase);
-
-  console.log('isGloballyUninitialised', isGloballyUninitialised);
-  console.log('isGloballyPaused', isGloballyPaused);
-  console.log('isCompleted', isCompleted);
 
   return (
     <ParallaxScrollView
@@ -79,7 +77,7 @@ export default function WorkoutScreen() {
     >
       <View style={styles.contentContainer}>
         <View id="globalTimerContainer" style={styles.globalTimerContainer}>
-          <Timer state={globalTimerState} textStyle={styles.globalTimerText} fontSize={24} />
+          <GlobalTimer state={globalTimerState} />
         </View>
         <View style={styles.mainContentContainer}>
           <Pressable
@@ -92,19 +90,11 @@ export default function WorkoutScreen() {
             <Ionicons name="refresh" color={Colors.common.primary} size={50} />
           </Pressable>
           <View id="workoutTimerContainer" style={styles.workoutTimerContainer}>
-            {showCountdown ? (
-              <CountdownTimer
-                from={
-                  currentPhase.phase === 'break'
-                    ? plan.exercisesBreakDuration
-                    : plan.setsBreakDuration
-                }
-                state={globalTimerState}
-                textStyle={styles.workoutTimer}
-              />
-            ) : (
-              <Timer state={globalTimerState} textStyle={styles.workoutTimer} fontSize={30} />
-            )}
+            <MainTimer
+              currentPhase={currentPhase}
+              nextPhase={schedule[schedulePhaseIdx + 1]}
+              state={globalTimerState}
+            />
           </View>
           <Pressable
             disabled={isGloballyUninitialised || isCompleted}
@@ -178,13 +168,8 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     height: 20,
   },
-  globalTimerText: {
-    color: Colors.common.blue,
-    fontSize: 24,
-    lineHeight: 24,
-    fontWeight: 600,
-  },
   workoutTimerContainer: {
+    alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 8,
     borderRadius: 90,

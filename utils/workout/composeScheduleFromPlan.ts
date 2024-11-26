@@ -18,7 +18,7 @@ type TimedExercisePhase = BaseExercisePhase & {
   type: 'timed';
   duration: number;
 };
-type ExercisePhase = RepsExercisePhase | TimedExercisePhase;
+export type ExercisePhase = RepsExercisePhase | TimedExercisePhase;
 type BreakPhase = {
   phase: 'break' | 'setBreak';
   duration: number;

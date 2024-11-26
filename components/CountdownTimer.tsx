@@ -1,55 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { StyleProp, TextStyle } from 'react-native';
 import { StyleSheet, View } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { Seconds } from '@/utils/types/time';
 import { Colors } from '@/constants/Colors';
 import { formatTime } from '@/utils/time/formatTime';
-import { TEN_HOURS, ONE_HOUR, TEN_MINUTES, ONE_MINUTE, TEN_SECONDS } from '@/constants/Time';
+import { ONE_HOUR, ONE_MINUTE } from '@/constants/Time';
 
 type CountdownTimerProps = {
   from: Seconds; // Initial time
   state: 'uninitialised' | 'running' | 'paused' | 'completed';
-  textStyle?: StyleProp<TextStyle>;
 };
 
-const TimeFormatter = ({
-  time,
-  fontSize = 32,
-  textStyle,
-}: {
-  time: number;
-  fontSize?: number;
-  textStyle?: StyleProp<TextStyle>;
-}) => {
-  const absoluteTime = Math.abs(time);
-  const [formattedTime] = formatTime(time).split('.');
-
-  const textColorStyle =
-    time < 1 ? styles.colorNegative : time <= 5 ? styles.colorCloseToZero : styles.colorDefault;
-  const rightOffset: number =
-    absoluteTime >= TEN_HOURS
-      ? (5 / 6) * fontSize
-      : absoluteTime >= ONE_HOUR
-      ? fontSize
-      : absoluteTime >= TEN_MINUTES
-      ? (8 / 6) * fontSize
-      : absoluteTime >= ONE_MINUTE
-      ? (9 / 6) * fontSize
-      : absoluteTime >= TEN_SECONDS
-      ? (11 / 6) * fontSize
-      : (25 / 12) * fontSize;
-
-  return (
-    <View style={styles.relativeRow}>
-      <ThemedText style={[textStyle, styles.absolute, textColorStyle, { right: rightOffset }]}>
-        {formattedTime}s
-      </ThemedText>
-    </View>
-  );
-};
-
-export const CountdownTimer = ({ from, state, textStyle }: CountdownTimerProps) => {
+export const CountdownTimer = ({ from, state }: CountdownTimerProps) => {
   const timeLeftRef = useRef<number>(from); // Store remaining time when paused
   const [remainingTime, setRemainingTime] = useState<number>(from);
 
@@ -94,20 +56,75 @@ export const CountdownTimer = ({ from, state, textStyle }: CountdownTimerProps) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
-  return TimeFormatter({ time: remainingTime, textStyle });
+  const absoluteTime = Math.abs(remainingTime);
+  const formattedTime = formatTime(remainingTime);
+
+  const colorStyle =
+    remainingTime < 1
+      ? styles.colorNegative
+      : remainingTime <= 5
+      ? styles.colorCloseToZero
+      : styles.colorPositive;
+
+  if (absoluteTime < ONE_MINUTE) {
+    return (
+      <View style={[styles.wrapper, { justifyContent: 'center' }]}>
+        <ThemedText style={[styles.textStyle, colorStyle]}>{formattedTime}s</ThemedText>
+      </View>
+    );
+  }
+
+  if (absoluteTime < ONE_HOUR) {
+    const [minutes, seconds] = formattedTime.split(':');
+    return (
+      <View style={styles.wrapper}>
+        <View style={{ flex: 1, alignItems: 'flex-end', paddingRight: 1 }}>
+          <ThemedText style={[styles.textStyle, colorStyle]}>{minutes}</ThemedText>
+        </View>
+        <View style={{ alignItems: 'center', width: 10 }}>
+          <ThemedText style={[styles.textStyle, colorStyle]}>:</ThemedText>
+        </View>
+        <View style={{ flex: 1.25, justifyContent: 'flex-start', paddingLeft: 1 }}>
+          <ThemedText style={[styles.textStyle, colorStyle]}>{seconds}s</ThemedText>
+        </View>
+      </View>
+    );
+  }
+
+  const [hours, minutes, seconds] = formattedTime.split(':');
+  return (
+    <View style={styles.wrapper}>
+      <View style={{ flex: 1, alignItems: 'flex-end', paddingRight: 1 }}>
+        <ThemedText style={[styles.textStyle, colorStyle]}>{hours}</ThemedText>
+      </View>
+      <View style={{ alignItems: 'center', width: 10 }}>
+        <ThemedText style={[styles.textStyle, colorStyle]}>:</ThemedText>
+      </View>
+      <View style={{ width: 30, alignItems: 'center' }}>
+        <ThemedText style={[styles.textStyle, colorStyle]}>{minutes}</ThemedText>
+      </View>
+      <View style={{ alignItems: 'center', width: 10 }}>
+        <ThemedText style={[styles.textStyle, colorStyle]}>:</ThemedText>
+      </View>
+      <View style={{ flex: 1.5, justifyContent: 'flex-start', paddingLeft: 1 }}>
+        <ThemedText style={[styles.textStyle, colorStyle]}>{seconds}s</ThemedText>
+      </View>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-  relativeRow: {
-    position: 'relative',
+  wrapper: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 160,
   },
-  absolute: {
-    position: 'absolute',
+  textStyle: {
+    color: Colors.common.primary,
+    fontSize: 30,
+    lineHeight: 30,
+    fontWeight: 'bold',
   },
-  colorDefault: {
+  colorPositive: {
     color: Colors.common.success,
   },
   colorNegative: {
